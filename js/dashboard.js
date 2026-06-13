@@ -40,7 +40,14 @@
             ? active.last.map((s) => `P${activeIndex + 1}: ${s}`).reverse()
             : ['—'];
 
-        els.throwsList.innerHTML = items.map((t) => `\u003cli\u003e${t}\u003c/li\u003e`).join('');
+        // DOM-Nodes mit textContent verwenden, damit WebSocket-Payloads
+        // keine HTML-Injection in die Letzte-Würfe-Liste bringen können.
+        els.throwsList.replaceChildren();
+        items.forEach((t) => {
+            const li = document.createElement('li');
+            li.textContent = t;
+            els.throwsList.appendChild(li);
+        });
     }
 
     api.onMessage((data) => {

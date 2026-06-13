@@ -51,7 +51,9 @@ CONFIG.useMockData = false;
 CONFIG.boardId = 'DEINE_BOARD_ID';
 ```
 
-Die genaue API/Websocket-Dokumentation von Autodarts ist noch in Issue #3 zu klären.
+> ⚠️ **API / WebSocket URLs sind Platzhalter.**  
+> Die genaue Schnittstelle von Autodarts ist noch in [Issue #3](https://github.com/Hoook21/autodarts-dashboard/issues/3) zu klären.  
+> Bis dahin läuft das Dashboard sicher mit **Mock-Daten**.
 
 ## Nächste Schritte
 
