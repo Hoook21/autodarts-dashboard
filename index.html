@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autodarts Dashboard</title>
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+    <div id="dashboard" class="dashboard">
+        <header class="top-bar">
+            <div class="match-info">
+                <span id="match-mode">501</span>
+                <span id="match-set-leg">Set 1 · Leg 1</span>
+            </div>
+            <div class="match-meta">
+                <span id="match-status">Warte auf Spiel…</span>
+            </div>
+        </header>
+
+        <main class="main-grid">
+            <section class="board-panel" aria-label="Dartscheibe">
+                <div class="board-placeholder">
+                    <p>Dartscheibe / Board-Ansicht</p>
+                </div>
+            </section>
+
+            <section class="score-panel" aria-label="Spielstand">
+                <div class="score-card active" id="player-1">
+                    <h2 class="player-name">Spieler 1</h2>
+                    <div class="score" id="score-1">501</div>
+                    <div class="stats">
+                        <span>Avg: <b id="avg-1">0.0</b></span>
+                        <span>Last: <b id="last-1">—</b></span>
+                    </div>
+                </div>
+
+                <div class="score-card" id="player-2">
+                    <h2 class="player-name">Spieler 2</h2>
+                    <div class="score" id="score-2">501</div>
+                    <div class="stats">
+                        <span>Avg: <b id="avg-2">0.0</b></span>
+                        <span>Last: <b id="last-2">—</b></span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="stats-panel" aria-label="Statistiken">
+                <h3>Letzte Würfe</h3>
+                <ul id="last-throws" class="throws-list">
+                    <li>—</li>
+                </ul>
+            </section>
+        </main>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
