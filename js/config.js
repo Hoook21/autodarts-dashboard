@@ -27,6 +27,11 @@ const CONFIG = {
     // Achtung: Kann CSP / X-Frame-Options / Auth blockieren. Siehe Issue #8 / #18.
     webviewUrl: null,
 
+    // Camera/image fallback options
+    // Wenn gesetzt, wird dieses Bild statt iframe/Platzhalter im linken Panel angezeigt.
+    // Praktisch für lokale Autodarts-Kamera-Screenshots, bis die echte Webview-Session stabil eingebettet ist.
+    cameraImageUrl: null,
+
     // Debug / offline development
     useMockData: true,
     mockUpdateIntervalMs: 3000,

@@ -1,60 +1,90 @@
 /**
- * Autodarts Dashboard — Webview embedding helper
- *
- * Lädt eine konfigurierte oder per URL-Parameter übergebene Webansicht
- * in den iframe der Webview-Fläche. Protokolliert Frame-Blocker, CSP- und
- * Ladefehler, damit Issue #8 / #18 reproduzierbar bleibt.
+ * Autodarts Dashboard — Webview / camera fallback embedding
  */
-
 (function () {
     'use strict';
 
-    function resolveWebviewUrl() {
+    function getUrlParam(name) {
         const params = new URLSearchParams(window.location.search);
-        const fromUrl = params.get('webview');
+        return params.get(name);
+    }
+
+    function isAllowedUrl(value) {
+        if (!value) return false;
+        try {
+            const url = new URL(value, window.location.href);
+            return url.protocol === 'http:' || url.protocol === 'https:' || url.protocol === 'file:';
+        } catch {
+            return false;
+        }
+    }
+
+    function resolveWebviewUrl() {
+        const fromUrl = getUrlParam('webview');
         if (fromUrl) {
-            // Einfache Sicherheit: Erlaube nur http/https-URLs, keine
-            // javascript:- oder data:-Pseudo-Protokolle.
-            if (/^https?:\/\//i.test(fromUrl)) {
-                return fromUrl;
-            }
-            console.warn('Ungültiger webview-URL-Parameter (nur http/https erlaubt):', fromUrl);
+            if (isAllowedUrl(fromUrl)) return fromUrl;
+            console.warn('Ungültiger webview-URL-Parameter:', fromUrl);
         }
         return CONFIG.webviewUrl || null;
     }
 
-    function replacePlaceholderWithIframe(url) {
+    function resolveCameraImageUrl() {
+        const fromUrl = getUrlParam('cameraImage') || getUrlParam('camera');
+        if (fromUrl) {
+            if (isAllowedUrl(fromUrl)) return fromUrl;
+            console.warn('Ungültiger cameraImage-URL-Parameter:', fromUrl);
+        }
+        return CONFIG.cameraImageUrl || null;
+    }
+
+    function getPanel() {
         const panel = document.querySelector('.webview-panel');
         const placeholder = panel && panel.querySelector('.webview-placeholder');
         if (!panel || !placeholder) {
             console.warn('Keine .webview-panel/.webview-placeholder gefunden.');
-            return;
+            return null;
         }
+        return { panel, placeholder };
+    }
+
+    function embedCameraImage(imageUrl) {
+        const target = getPanel();
+        if (!target) return;
+
+        const stage = document.createElement('div');
+        stage.className = 'camera-stage';
+
+        const img = document.createElement('img');
+        img.className = 'camera-image';
+        img.src = imageUrl;
+        img.alt = 'Autodarts Kamerabild';
+
+        const label = document.createElement('div');
+        label.className = 'camera-label';
+        label.textContent = 'Autodarts Kamera';
+
+        stage.append(img, label);
+        target.placeholder.replaceWith(stage);
+    }
+
+    function embedWebview(webviewUrl) {
+        const target = getPanel();
+        if (!target) return;
 
         const iframe = document.createElement('iframe');
         iframe.className = 'webview-iframe';
-        iframe.src = url;
+        iframe.src = webviewUrl;
         iframe.title = 'Autodarts Webansicht';
         iframe.setAttribute('allow', 'autoplay; camera; fullscreen');
         iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups');
-        iframe.setAttribute('loading', 'eager');
+        iframe.loading = 'eager';
+        iframe.referrerPolicy = 'no-referrer';
 
         iframe.addEventListener('error', () => {
-            console.error('Webview iframe konnte nicht geladen werden:', url);
+            console.error('Webview iframe konnte nicht geladen werden:', webviewUrl);
         });
 
-        iframe.addEventListener('load', () => {
-            try {
-                // Cross-origin: Inhalt der Seite ist nicht lesbar.
-                // Nur erreichbar, wenn iframe same-origin läuft.
-                const loc = iframe.contentWindow && iframe.contentWindow.location;
-                console.log('Webview iframe geladen. Sichtbare URL:', loc ? loc.href : '(cross-origin)');
-            } catch (err) {
-                console.log('Webview iframe geladen (cross-origin, URL nicht lesbar).');
-            }
-        });
-
-        placeholder.replaceWith(iframe);
+        target.placeholder.replaceWith(iframe);
     }
 
     function logFrameBlocker() {
@@ -67,16 +97,15 @@
         });
     }
 
-    function initWebview() {
-        const url = resolveWebviewUrl();
-        if (!url) return;
+    document.addEventListener('DOMContentLoaded', () => {
         logFrameBlocker();
-        replacePlaceholderWithIframe(url);
-    }
+        const cameraImageUrl = resolveCameraImageUrl();
+        if (cameraImageUrl) {
+            embedCameraImage(cameraImageUrl);
+            return;
+        }
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initWebview);
-    } else {
-        initWebview();
-    }
+        const webviewUrl = resolveWebviewUrl();
+        if (webviewUrl) embedWebview(webviewUrl);
+    });
 })();
