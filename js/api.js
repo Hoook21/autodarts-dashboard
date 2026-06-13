@@ -10,6 +10,7 @@
         constructor(config) {
             this.config = config;
             this.ws = null;
+            this.adapter = null;
             this.listeners = new Set();
         }
 
@@ -29,6 +30,12 @@
         }
 
         connect() {
+            // 1) Live-Adapter/Bridge bevorzugt nutzen, wenn konfiguriert
+            if (this.config.liveAdapterBridgeUrl || typeof window.AutodartsLiveAdapter !== 'undefined') {
+                this.connectLiveAdapter();
+                return;
+            }
+
             if (this.config.useMockData) {
                 this.startMockStream();
                 return;
@@ -99,6 +106,23 @@
                     players: players.map((p) => ({ ...p })),
                 });
             }, this.config.mockUpdateIntervalMs);
+        }
+
+        connectLiveAdapter() {
+            if (!window.AutodartsLiveAdapter) {
+                console.warn('AutodartsLiveAdapter nicht geladen.');
+                return;
+            }
+
+            this.adapter = new window.AutodartsLiveAdapter(this.config);
+            this.adapter.onUpdate((data) => this.emit(data));
+
+            if (this.config.liveAdapterBridgeUrl) {
+                this.adapter.connectBridge(this.config.liveAdapterBridgeUrl);
+                console.log('Live-Adapter Bridge verbunden:', this.config.liveAdapterBridgeUrl);
+            } else {
+                this.adapter.listenPostMessage();
+            }
         }
     }
 

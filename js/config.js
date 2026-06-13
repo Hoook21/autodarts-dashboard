@@ -38,4 +38,9 @@ const CONFIG = {
     useMockData: false,
     allowMockFallback: false,
     mockUpdateIntervalMs: 3000,
+
+    // Live-Adapter / Bridge
+    // Wenn gesetzt, verbindet der Adapter sich mit diesem lokalen WebSocket.
+    // Siehe docs/autodarts-tools-research.md und Issue #31.
+    liveAdapterBridgeUrl: null,
 };

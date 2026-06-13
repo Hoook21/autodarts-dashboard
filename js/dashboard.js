@@ -29,6 +29,9 @@
         if (['0', 'false', 'no'].includes((params.get('mock') || '').toLowerCase())) {
             CONFIG.useMockData = false;
         }
+
+        const bridgeUrl = params.get('bridge');
+        if (bridgeUrl) CONFIG.liveAdapterBridgeUrl = bridgeUrl;
     }
 
     applyRuntimeParams();
