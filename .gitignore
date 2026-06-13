@@ -1,0 +1,10 @@
+# Local/private files
+.local/
+*.local.*
+
+# macOS
+.DS_Store
+
+# Logs/temp
+*.log
+.tmp/
