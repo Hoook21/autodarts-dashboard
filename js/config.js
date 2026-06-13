@@ -15,10 +15,10 @@ const CONFIG = {
     startScore: 501,
 
     // Layout toggles
-    // Verfügbare Layouts: 'balanced', 'score-first', 'webview-sidepanel'
-    // Kann überschrieben werden per URL-Parameter, z.B. ?layout=score-first
-    layout: 'webview-sidepanel',
-    availableLayouts: ['balanced', 'score-first', 'webview-sidepanel'],
+    // Verfügbare Layouts: 'balanced', 'score-first', 'webview-sidepanel', 'big-type-with-board'
+    // Kann überschrieben werden per URL-Parameter, z.B. ?layout=big-type-with-board
+    layout: 'big-type-with-board',
+    availableLayouts: ['balanced', 'score-first', 'webview-sidepanel', 'big-type-with-board'],
     showBoard: true,
     showStats: true,
 

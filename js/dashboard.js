@@ -21,7 +21,7 @@
     function applyLayout() {
         const grid = document.querySelector('.main-grid');
         if (!grid) return;
-        grid.classList.remove('layout-balanced', 'layout-score-first', 'layout-webview-sidepanel');
+        grid.classList.remove('layout-balanced', 'layout-score-first', 'layout-webview-sidepanel', 'layout-big-type-with-board');
         const layout = CONFIG.layout || 'balanced';
         grid.classList.add(`layout-${layout}`);
         document.documentElement.dataset.layout = layout;
