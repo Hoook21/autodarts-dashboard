@@ -29,7 +29,7 @@ html, body {
     grid-template-rows: auto 1fr;
     height: 100vh;
     width: 100vw;
-    padding: 1vh 1vw;
+    padding: 0.5vh 0.8vw;
     gap: 1vh;
 }
 
@@ -103,26 +103,26 @@ html, body {
 
 .layout-big-type .score-panel {
     justify-content: center;
-    gap: 4vh;
+    gap: 2.5vh;
 }
 
 .layout-big-type .score-card {
-    padding: 3vh 2vw;
+    padding: 2vh 1.5vw;
     border-radius: 1.2vw;
 }
 
 .layout-big-type .player-name {
-    font-size: 4vh;
+    font-size: 2.4vh;
     margin-bottom: 1.5vh;
 }
 
 .layout-big-type .score {
-    font-size: 18vh;
+    font-size: 14vh;
     margin-bottom: 2vh;
 }
 
 .layout-big-type .stats {
-    font-size: 3.5vh;
+    font-size: 2.8vh;
     justify-content: center;
     gap: 2vw;
 }
@@ -133,21 +133,21 @@ html, body {
 }
 
 .layout-big-type .throws-list {
-    font-size: 3vh;
+    font-size: 2.4vh;
     gap: 1vh;
 }
 
 .layout-big-type .throws-list li {
-    padding: 1vh 1vw;
+    padding: 0.5vh 0.8vw;
 }
 
 .layout-big-type .checkout-panel {
     margin-top: 2vh;
-    padding: 2vh;
+    padding: 1.5vh;
 }
 
 .layout-big-type .checkout-value {
-    font-size: 8vh;
+    font-size: 6vh;
 }
 
 .board-panel,
@@ -156,7 +156,7 @@ html, body {
 .stats-panel {
     background: var(--panel);
     border-radius: 0.5vw;
-    padding: 1vh 1vw;
+    padding: 0.5vh 0.8vw;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -250,7 +250,7 @@ html, body {
 }
 
 .checkout-value {
-    font-size: 4vh;
+    font-size: 2.4vh;
     font-weight: 700;
     color: var(--success);
 }
