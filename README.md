@@ -42,6 +42,18 @@ open http://localhost:8080
 
 Standardmäßig läuft das Dashboard mit **Mock-Daten**, damit man ohne live Board entwickeln kann.
 
+### Layout-Varianten vergleichen
+
+Das Layout kann per URL-Parameter gewechselt werden:
+
+| Variante | URL |
+| --- | --- |
+| Webview + Sidepanel (Standard) | `http://localhost:8080/?layout=webview-sidepanel` |
+| Balanced 3-Column | `http://localhost:8080/?layout=balanced` |
+| Score-first | `http://localhost:8080/?layout=score-first` |
+
+Ungültige Werte fallen automatisch auf `webview-sidepanel` zurück.
+
 ## Autodarts-API anbinden
 
 In `js/config.js`:
