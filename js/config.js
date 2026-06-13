@@ -22,6 +22,11 @@ const CONFIG = {
     showBoard: true,
     showStats: true,
 
+    // Webview embedding options
+    // Wenn gesetzt, wird die URL statt des Platzhalters in einem iframe geladen.
+    // Achtung: Kann CSP / X-Frame-Options / Auth blockieren. Siehe Issue #8 / #18.
+    webviewUrl: null,
+
     // Debug / offline development
     useMockData: true,
     mockUpdateIntervalMs: 3000,
