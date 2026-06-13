@@ -20,7 +20,8 @@ autodarts-dashboard/
 ├── js/
 │   ├── config.js       # Board-ID, API-URL, Mock-Modus
 │   ├── api.js          # WebSocket / API / Mock-Daten
-│   └── dashboard.js    # UI-Logik
+│   ├── dashboard.js    # UI-Logik
+│   └── webview.js      # iframe / Kamera-Fallback-Einbettung
 ├── mock/
 │   └── autodarts-mock.json  # (optional) statische Testdaten
 └── README.md
@@ -74,6 +75,29 @@ open http://localhost:8080/?layout=webview-big-readable
 
 > ⚠️ **Aktuell handelt es sich um einen Frontend-/Integrationstest.**
 > Die Anzeige läuft mit Mock-Daten. Eine finale Live-Datenbindung an Autodarts ist noch in Arbeit (siehe [Issue #3](https://github.com/Hoook21/autodarts-dashboard/issues/3) und [Epic #17](https://github.com/Hoook21/autodarts-dashboard/issues/17)).
+
+## iframe-Steuerung / Webview-Parameter
+
+```
+http://localhost:8080/?layout=webview-big-readable&webview=http://127.0.0.1:3180/calibration?cam=3
+```
+
+Wenn die Autodarts-Seite Gerätezugriff braucht, versucht das Dashboard automatisch
+folgende Permissions im iframe freizuschalten: `camera`, `microphone`, `usb`,
+`hid`, `bluetooth`, `fullscreen`. Ob der Browser sie tatsächlich erlaubt, hängt
+vom jeweiligen Host und Browser ab.
+
+## Kamera-Bild-Fallback
+
+Falls die Autodarts-Webview im iframe nicht verbindet, kann ein statisches
+Kamerabild links angezeigt werden:
+
+```
+http://localhost:8080/?layout=webview-big-readable&cameraImage=http://127.0.0.1:8080/board.jpg
+```
+
+Das Bild wird `object-fit: contain` im linken Panel skaliert, damit es auch
+bei unterschiedlichen Auflösungen brauchbar bleibt.
 
 Mehr Details und Preview zum RC1 gibt es unter [`docs/release-candidates/rc1-webview-big-readable/README.md`](docs/release-candidates/rc1-webview-big-readable/README.md).
 

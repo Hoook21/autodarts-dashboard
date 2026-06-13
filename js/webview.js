@@ -75,13 +75,39 @@
         iframe.className = 'webview-iframe';
         iframe.src = webviewUrl;
         iframe.title = 'Autodarts Webansicht';
-        iframe.setAttribute('allow', 'autoplay; camera; fullscreen');
-        iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups');
+        // Für Autodarts brauchen wir eventuell Kamera, Mikrofon und WebUSB/WebHID/
+        // WebBluetooth im iframe. allow-Attribut + sandbox müssen zusammenpassen.
+        // Vollbild ist nötig, falls Autodarts ein Vollbild-Kamerabild anfordert.
+        iframe.setAttribute(
+            'allow',
+            'autoplay; camera; microphone; fullscreen; usb; hid; bluetooth'
+        );
+        iframe.setAttribute(
+            'sandbox',
+            'allow-scripts allow-same-origin allow-forms allow-popups allow-presentation'
+        );
         iframe.loading = 'eager';
         iframe.referrerPolicy = 'no-referrer';
 
         iframe.addEventListener('error', () => {
             console.error('Webview iframe konnte nicht geladen werden:', webviewUrl);
+        });
+
+        // CSP-/Frame-Blocker werden per securitypolicyviolation geloggt.
+        // Hier zusätzlich ein PostMessage-Bridge-Versuch, falls Autodarts
+        // über MessageChannel mit dem Board kommuniziert.
+        iframe.addEventListener('load', () => {
+            try {
+                if (iframe.contentWindow) {
+                    iframe.contentWindow.postMessage(
+                        { source: 'autodarts-dashboard', ready: true },
+                        '*'
+                    );
+                }
+            } catch (e) {
+                // Cross-origin: postMessage-Ziel nicht erreichbar
+                console.warn('PostMessage an iframe nicht möglich:', e.message);
+            }
         });
 
         target.placeholder.replaceWith(iframe);
@@ -94,6 +120,13 @@
                 violatedDirective: event.violatedDirective,
                 blockedURI: event.blockedURI,
             });
+        });
+
+        // Feature-Policy-/Permission-Policy-Verletzungen erkennen
+        window.addEventListener('message', (event) => {
+            if (event.data && event.data.source === 'autodarts-dashboard-debug') {
+                console.log('Debug-Nachricht vom iframe:', event.data);
+            }
         });
     }
 
