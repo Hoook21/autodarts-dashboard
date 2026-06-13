@@ -5,6 +5,17 @@
 (function () {
     'use strict';
 
+    function resolveLayout() {
+        const params = new URLSearchParams(window.location.search);
+        const fromUrl = params.get('layout');
+        if (fromUrl && CONFIG.availableLayouts.includes(fromUrl)) {
+            return fromUrl;
+        }
+        return CONFIG.layout || 'balanced';
+    }
+
+    CONFIG.layout = resolveLayout();
+
     const api = new AutodartsAPI(CONFIG);
 
     function applyLayout() {
@@ -13,6 +24,7 @@
         grid.classList.remove('layout-balanced', 'layout-score-first', 'layout-webview-sidepanel');
         const layout = CONFIG.layout || 'balanced';
         grid.classList.add(`layout-${layout}`);
+        document.documentElement.dataset.layout = layout;
     }
 
     function calculateCheckout(score) {
