@@ -135,6 +135,13 @@ CONFIG.boardId = 'DEINE_BOARD_ID';
 > Die genaue Schnittstelle von Autodarts ist noch in [Issue #3](https://github.com/Hoook21/autodarts-dashboard/issues/3) zu klären.  
 > Bis dahin läuft das Dashboard sicher mit **Mock-Daten**.
 
+## Standardfrontend-Funktionen inventarisieren
+
+Eine laufende Liste der Autodarts-Standardfrontend-Funktionen, die das Dashboard langfristig abbilden soll, liegt in
+[`docs/inventory-autodarts-frontend.md`](docs/inventory-autodarts-frontend.md).
+
+Ziel: Klare Trennung zwischen "Original-Autodarts macht" und "Dashboard zeigt nur an".
+
 ## Nächste Schritte
 
 Siehe [GitHub Issues](https://github.com/Hoook21/autodarts-dashboard/issues).
