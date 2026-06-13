@@ -1,6 +1,6 @@
 # Autodarts Dashboard
 
-Dashboard für Autodarts im Querformat — optimiert für einen Landscape-Monitor am Dartboard.
+Dashboard für Autodarts im Querformat - optimiert für einen Landscape-Monitor am Dartboard.
 
 ## Ziel
 
@@ -101,6 +101,20 @@ bei unterschiedlichen Auflösungen brauchbar bleibt.
 
 Mehr Details und Preview zum RC1 gibt es unter [`docs/release-candidates/rc1-webview-big-readable/README.md`](docs/release-candidates/rc1-webview-big-readable/README.md).
 
+## iframe/Webview funktioniert nicht?
+
+Wenn Autodarts im Dashboard-iframe nur „Connecting to Board“ anzeigt, hilft `scripts/diagnose-iframe-environment.html`:
+
+```bash
+# Einfachen Server starten
+python3 -m http.server 8080
+
+# Diagnose im problematischen Browser öffnen
+open http://localhost:8080/scripts/diagnose-iframe-environment.html
+```
+
+Die Seite zeigt, welche Browser-APIs (`navigator.usb`, `navigator.hid`, `navigator.bluetooth`, `navigator.mediaDevices`) im aktuellen Browser/Profil verfügbar sind. Damit lässt sich in [Issue #18](https://github.com/Hoook21/autodarts-dashboard/issues/18) gezielt prüfen, ob es am iframe oder am Headless-Browser-Profil liegt.
+
 ## Autodarts-API anbinden
 
 In `js/config.js`:
@@ -110,8 +124,8 @@ CONFIG.useMockData = false;
 CONFIG.boardId = 'DEINE_BOARD_ID';
 ```
 
-> ⚠️ **API / WebSocket URLs sind Platzhalter.**
-> Die genaue Schnittstelle von Autodarts ist noch in [Issue #3](https://github.com/Hoook21/autodarts-dashboard/issues/3) zu klären.
+> ⚠️ **API / WebSocket URLs sind Platzhalter.**  
+> Die genaue Schnittstelle von Autodarts ist noch in [Issue #3](https://github.com/Hoook21/autodarts-dashboard/issues/3) zu klären.  
 > Bis dahin läuft das Dashboard sicher mit **Mock-Daten**.
 
 ## Nächste Schritte

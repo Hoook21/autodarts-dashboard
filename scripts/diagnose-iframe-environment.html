@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autodarts iframe-Umgebungsdiagnose</title>
+    <style>
+        :root {
+            --bg: #0b0c10;
+            --panel: #1f2833;
+            --text: #c5c6c7;
+            --accent: #66fcf1;
+            --accent-dim: #45a29e;
+            --danger: #ef476f;
+            --success: #06d6a0;
+            --warning: #ffd166;
+        }
+        html, body {
+            margin: 0;
+            padding: 1rem;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            line-height: 1.5;
+        }
+        h1 {
+            color: var(--accent);
+            font-size: 1.4rem;
+            margin-top: 0;
+        }
+        h2 {
+            color: var(--accent-dim);
+            font-size: 1.1rem;
+            border-bottom: 1px solid var(--panel);
+            padding-bottom: 0.3rem;
+            margin-top: 2rem;
+        }
+        .section {
+            background: var(--panel);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+        th, td {
+            text-align: left;
+            padding: 0.4rem 0.6rem;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            vertical-align: top;
+        }
+        th {
+            color: var(--accent-dim);
+            width: 35%;
+        }
+        .ok { color: var(--success); font-weight: 600; }
+        .warn { color: var(--warning); font-weight: 600; }
+        .fail { color: var(--danger); font-weight: 600; }
+        code {
+            background: rgba(0,0,0,0.35);
+            padding: 0.15rem 0.35rem;
+            border-radius: 0.25rem;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            word-break: break-word;
+        }
+        .hint {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: rgba(102, 252, 241, 0.08);
+            border-left: 4px solid var(--accent);
+            border-radius: 0.25rem;
+        }
+        .hint h3 {
+            margin: 0 0 0.5rem;
+            color: var(--accent);
+            font-size: 1rem;
+        }
+        .hint ul {
+            margin: 0;
+            padding-left: 1.2rem;
+        }
+        .hint li {
+            margin-bottom: 0.3rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>Autodarts iframe-Umgebungsdiagnose</h1>
+    <p>
+        Diese Seite prüft, welche Browser-APIs im aktuellen Kontext verfügbar sind.
+        Relevant für <a href="https://github.com/Hoook21/autodarts-dashboard/issues/18">Issue #18</a>:
+        Warum zeigt Autodarts in einem Headless-Chrome/iframe nur „Connecting to Board“?
+    </p>
+
+    <div class="section">
+        <h2>Browser-Grunddaten</h2>
+        <table id="browser-table"></table>
+    </div>
+
+    <div class="section">
+        <h2>Hardware-/Medien-APIs</h2>
+        <table id="hardware-table"></table>
+    </div>
+
+    <div class="section">
+        <h2>Berechtigungen (Permissions API)</h2>
+        <table id="permissions-table"></table>
+    </div>
+
+    <div class="section">
+        <h2>iframe-Test</h2>
+        <table id="iframe-table"></table>
+    </div>
+
+    <div class="hint">
+        <h3>So verwendest du diese Diagnose</h3>
+        <ul>
+            <li>Öffne diese Datei im <strong>selben Browser</strong>, der später das Dashboard hosten soll (z. B. Headless-Chrome auf dem iMac).</li>
+            <li>Vergleiche die Werte mit einem normalen Safari-Fenster, in dem Autodarts funktioniert.</li>
+            <li>Wenn <code>navigator.usb</code>, <code>navigator.hid</code> oder <code>navigator.bluetooth</code> hier <span class="fail">nicht verfügbar</span> sind, kann der iframe Autodarts nicht mit dem Board sprechen.</li>
+            <li>Prüfe zusätzlich <code>chrome://device-log</code> und <code>chrome://usb-internals</code> im Headless-Chrome.</li>
+        </ul>
+    </div>
+
+    <script>
+        (function () {
+            'use strict';
+
+            function tag(value, type) {
+                const span = document.createElement('span');
+                span.className = type;
+                span.textContent = value;
+                return span;
+            }
+
+            function addRow(tableId, label, valueNode) {
+                const table = document.getElementById(tableId);
+                const tr = document.createElement('tr');
+                const th = document.createElement('th');
+                th.textContent = label;
+                const td = document.createElement('td');
+                if (typeof valueNode === 'string') {
+                    td.innerHTML = valueNode;
+                } else {
+                    td.appendChild(valueNode);
+                }
+                tr.append(th, td);
+                table.appendChild(tr);
+            }
+
+            function presentFeature(value) {
+                if (value === undefined) return tag('nicht definiert', 'fail');
+                if (value === null) return tag('null', 'warn');
+                if (typeof value === 'boolean') return value ? tag('verfügbar', 'ok') : tag('nicht verfügbar', 'fail');
+                const el = document.createElement('span');
+                el.className = 'ok';
+                el.textContent = typeof value === 'object' ? 'verfügbar (Objekt)' : String(value);
+                return el;
+            }
+
+            function presentPermission(state) {
+                switch (state) {
+                    case 'granted': return tag('erteilt', 'ok');
+                    case 'prompt': return tag('noch nicht gefragt', 'warn');
+                    case 'denied': return tag('verweigert', 'fail');
+                    default: return tag(state ?? 'unbekannt', 'warn');
+                }
+            }
+
+            // Browser-Grunddaten
+            const uaCode = document.createElement('code');
+            uaCode.textContent = navigator.userAgent;
+            addRow('browser-table', 'User-Agent', uaCode);
+            addRow('browser-table', 'Plattform', navigator.platform || '—');
+            addRow('browser-table', 'Sprache', navigator.language || '—');
+            addRow('browser-table', 'Cookies aktiviert', presentFeature(navigator.cookieEnabled));
+            addRow('browser-table', 'Online-Status', navigator.onLine ? tag('online', 'ok') : tag('offline', 'warn'));
+
+            // Hardware-/Medien-APIs
+            addRow('hardware-table', 'navigator.usb', presentFeature(navigator.usb));
+            addRow('hardware-table', 'navigator.hid', presentFeature(navigator.hid));
+            addRow('hardware-table', 'navigator.bluetooth', presentFeature(navigator.bluetooth));
+            addRow('hardware-table', 'navigator.mediaDevices', presentFeature(navigator.mediaDevices));
+            addRow('hardware-table', 'navigator.serial', presentFeature(navigator.serial));
+            addRow('hardware-table', 'navigator.usb.getDevices', presentFeature(typeof navigator.usb?.getDevices));
+
+            // Permissions API (best-effort)
+            const permissionNames = ['camera', 'microphone', 'midi', 'midi-sysex'];
+            if (navigator.permissions) {
+                permissionNames.forEach((name) => {
+                    navigator.permissions.query({ name }).then((result) => {
+                        addRow('permissions-table', name, presentPermission(result.state));
+                    }).catch((err) => {
+                        addRow('permissions-table', name, tag(`Fehler: ${err.message}`, 'warn'));
+                    });
+                });
+            } else {
+                addRow('permissions-table', 'Permissions API', tag('nicht verfügbar', 'fail'));
+            }
+
+            // iframe-Test: prüfen, ob ein iframe überhaupt geladen werden kann
+            const iframeTestResult = (() => {
+                const parentOrigin = window.location.origin;
+                const isLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(parentOrigin);
+                const span = document.createElement('span');
+                span.textContent = `${parentOrigin} (${isLocalhost ? 'lokal' : 'nicht lokal'})`;
+                return span;
+            })();
+            addRow('iframe-table', 'Parent-Origin', iframeTestResult);
+            addRow('iframe-table', 'sandboxed', window.frameElement ? tag('ja', 'warn') : tag('nein', 'ok'));
+        })();
+    </script>
+</body>
+</html>
