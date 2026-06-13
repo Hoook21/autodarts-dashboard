@@ -81,6 +81,7 @@
                     score: Array.isArray(match.scores) ? match.scores[i] : p?.score ?? null,
                     last: this.extractLastTurn(match, i),
                     avg,
+                    busted: i === activeIndex ? match.turnBusted ?? false : false,
                 };
             });
 
@@ -89,6 +90,8 @@
                 activePlayer: activeIndex,
                 players,
                 raw: match,
+                gameFinished: !!match.gameFinished,
+                gameWinner: typeof match.gameWinner === 'number' ? match.gameWinner : null,
             };
         }
 

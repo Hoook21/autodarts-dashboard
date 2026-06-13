@@ -59,6 +59,25 @@ Relevantes Mapping für das Dashboard:
 | `turns[]` | Historie der letzten Würfe |
 | `gameFinished` + `gameWinner` | Spiel-/Leg-Beendet-Meldung |
 
+## Adapter-Implementierung
+
+Das Grundgerüst liegt in `js/adapter.js`:
+
+- Empfängt postMessage- oder WebSocket-Payloads.
+- Filtert auf Channel `autodarts.matches`.
+- Mappt Spieler, Scores, aktiven Spieler, letzte Aufnahme und Average.
+- Gibt `gameFinished`, `gameWinner` und `turnBusted` weiter, damit das Dashboard später Bust/Game-Shot anzeigen kann.
+
+Nutzung:
+
+```html
+<!-- Standard: postMessage von einer Extension / einem Script -->
+<script src="js/adapter.js"></script>
+
+<!-- Oder mit lokaler WebSocket-Bridge -->
+http://localhost:8080/?bridge=ws://localhost:9001
+```
+
 ## Sicherheits- und Architektur-Grenzen
 
 - **read-only**: Wir empfangen nur Daten, die das Original-Frontend ohnehin anzeigt.
