@@ -1,22 +1,36 @@
 # Autodarts Dashboard
 
-Projektgrundlage für ein späteres Autodarts-Dashboard.
+Projektgrundlage für ein Autodarts-Dashboard im Querformat.
+
+## Grundidee
+
+Wir wollen eine Webanwendung bauen bzw. anpassen, die auf einem Querformat-Monitor am iMac gut nutzbar ist.
+
+Geplantes Layout:
+
+- links: Dartscheibe / Board-Ansicht
+- rechts: Scoring, Punktestand, Spieler-/Leg-/Set-Informationen und weitere relevante Anzeigen
 
 ## Ziel
 
-Ein Dashboard planen und entwickeln, das auf einem Querformat-Monitor gut nutzbar ist und das lokale Autodarts-Setup sinnvoll ergänzt.
+Eine übersichtliche Autodarts-Anzeige, die beim Spielen schnell erfassbar ist und auf einem breiten Bildschirm sinnvoll aufgeteilt wird.
 
 ## Aktueller Stand
 
-Erste neutrale Projektstruktur. Konkrete lokale Setup-Details, Fotos, Pfade und private Notizen bleiben außerhalb von GitHub.
+- Projektordner auf dem iMac ist angelegt
+- GitHub-Repository ist angelegt
+- Erste neutrale Projektstruktur steht
+- konkrete Anforderungen, Screenshots, Layoutideen und technische Umsetzung müssen noch gesammelt werden
 
-## Geplante Inhalte
+## Nächster Schritt
 
-- Anforderungen sammeln
-- grobes Layout/Mockup erstellen
-- technische Möglichkeiten prüfen
-- später Dashboard-Prototyp bauen
+Erstmal gemeinsam sammeln:
 
-## Datenschutz / lokale Daten
+1. Welche Informationen müssen rechts sichtbar sein?
+2. Welche Autodarts-Webansicht oder API/Quelle nutzen wir?
+3. Wie soll das Querformat-Layout grob aussehen?
+4. Welche Geräte/Browser/Monitorauflösung sind relevant?
 
-Dieses Repository soll keine privaten lokalen Informationen enthalten. Alles Persönliche bleibt im lokalen Projektordner.
+## Mitmachen
+
+Ideen, Layout-Skizzen, Hinweise zur Autodarts-Weboberfläche oder technische Vorschläge sind willkommen.
