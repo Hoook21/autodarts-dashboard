@@ -84,12 +84,21 @@ html, body {
 
 /* Layout 4: Big-Type / Distance-Readable (Score + Stats maximal aus Abstand lesbar) */
 .layout-big-type {
-    grid-template-columns: 2fr 3fr 1.5fr;
+    grid-template-columns: 3fr 1.5fr;
+    grid-template-areas: 'score stats';
 }
 
 .layout-big-type .webview-panel,
 .layout-big-type .board-panel {
     display: none;
+}
+
+.layout-big-type .score-panel {
+    grid-area: score;
+}
+
+.layout-big-type .stats-panel {
+    grid-area: stats;
 }
 
 .layout-big-type .score-panel {
