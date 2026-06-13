@@ -33,6 +33,9 @@ const CONFIG = {
     cameraImageUrl: null,
 
     // Debug / offline development
-    useMockData: true,
+    // Default: keine Fake-Würfe im echten Board-Test.
+    // Mock-Daten nur explizit per ?mock=1 oder CONFIG.useMockData = true aktivieren.
+    useMockData: false,
+    allowMockFallback: false,
     mockUpdateIntervalMs: 3000,
 };
