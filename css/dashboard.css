@@ -82,6 +82,74 @@ html, body {
     grid-template-columns: 2.5fr 1fr 1fr;
 }
 
+
+/* Layout 5: Webview + Big Readable Scores
+   Links bleibt das Brett groß sichtbar, rechts wird die vorhandene Punkteanzeige
+   auf Dartboard-Abstand getrimmt. */
+.layout-webview-big-readable {
+    grid-template-columns: minmax(0, 1.55fr) minmax(34vw, 1fr);
+    grid-template-areas: 'webview score';
+}
+
+.layout-webview-big-readable .webview-panel,
+.layout-webview-big-readable .board-panel {
+    grid-area: webview;
+    min-height: 0;
+}
+
+.layout-webview-big-readable .score-panel {
+    grid-area: score;
+    justify-content: center;
+    gap: 2.8vh;
+    padding: 2.2vh 1.4vw;
+}
+
+.layout-webview-big-readable .stats-panel {
+    display: none;
+}
+
+.layout-webview-big-readable .score-card {
+    padding: 2.4vh 1.5vw;
+    border-radius: 1.2vw;
+}
+
+.layout-webview-big-readable .player-name {
+    font-size: clamp(2.2rem, 4.4vh, 4.5rem);
+    line-height: 1;
+    margin-bottom: 1.2vh;
+    letter-spacing: .03em;
+}
+
+.layout-webview-big-readable .score {
+    font-size: clamp(6rem, 15vh, 12rem);
+    line-height: .9;
+    margin-bottom: 1.8vh;
+}
+
+.layout-webview-big-readable .stats {
+    font-size: clamp(1.8rem, 3.2vh, 3.3rem);
+    gap: 1.4vw;
+    justify-content: center;
+}
+
+.layout-webview-big-readable .checkout-panel {
+    margin-top: 0;
+    padding: 2.2vh 1.4vw;
+}
+
+.layout-webview-big-readable .checkout-panel h3 {
+    font-size: clamp(1.4rem, 2.4vh, 2.5rem);
+}
+
+.layout-webview-big-readable .checkout-value {
+    font-size: clamp(3rem, 6.5vh, 6rem);
+    line-height: 1;
+}
+
+.layout-webview-big-readable .webview-placeholder {
+    font-size: 3vh;
+}
+
 /* Layout 4: Big-Type / Distance-Readable (Score + Stats maximal aus Abstand lesbar) */
 .layout-big-type {
     grid-template-columns: 3fr 1.5fr;
