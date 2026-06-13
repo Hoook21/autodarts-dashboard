@@ -18,10 +18,11 @@
             </div>
         </header>
 
-        <main class="main-grid">
-            <section class="board-panel" aria-label="Dartscheibe">
-                <div class="board-placeholder">
-                    <p>Dartscheibe / Board-Ansicht</p>
+        <main class="main-grid layout-webview-sidepanel">
+            <section class="webview-panel" aria-label="Autodarts Webansicht">
+                <div class="webview-placeholder">
+                    <p>Autodarts Webansicht</p>
+                    <p class="webview-hint">Hier später iframe / eingebettete Ansicht</p>
                 </div>
             </section>
 
@@ -42,6 +43,11 @@
                         <span>Avg: <b id="avg-2">0.0</b></span>
                         <span>Last: <b id="last-2">—</b></span>
                     </div>
+                </div>
+
+                <div class="checkout-panel" aria-label="Checkout-Hinweise">
+                    <h3>Checkout</h3>
+                    <div id="checkout-display" class="checkout-value">—</div>
                 </div>
             </section>
 
