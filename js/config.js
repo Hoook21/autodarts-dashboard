@@ -15,6 +15,8 @@ const CONFIG = {
     startScore: 501,
 
     // Layout toggles
+    // Verfügbare Layouts: 'balanced', 'score-first', 'webview-sidepanel'
+    layout: 'webview-sidepanel',
     showBoard: true,
     showStats: true,
 
