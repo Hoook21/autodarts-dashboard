@@ -63,12 +63,163 @@ html, body {
 
 .main-grid {
     display: grid;
-    grid-template-columns: 2fr 1.2fr 1fr;
     gap: 1vw;
     min-height: 0;
 }
 
+/* Layout 1: Balanced 3-Column (Board | Score | Stats) */
+.layout-balanced {
+    grid-template-columns: 2fr 1.2fr 1fr;
+}
+
+/* Layout 2: Score-first */
+.layout-score-first {
+    grid-template-columns: 1fr 2fr 1fr;
+}
+
+/* Layout 3: Webview + Sidepanel */
+.layout-webview-sidepanel {
+    grid-template-columns: 2.5fr 1fr 1fr;
+}
+
+
+/* Layout 5: Webview + Big Readable Scores
+   Links bleibt das Brett groß sichtbar, rechts wird die vorhandene Punkteanzeige
+   auf Dartboard-Abstand getrimmt. */
+.layout-webview-big-readable {
+    grid-template-columns: minmax(0, 1.55fr) minmax(34vw, 1fr);
+    grid-template-areas: 'webview score';
+}
+
+.layout-webview-big-readable .webview-panel,
+.layout-webview-big-readable .board-panel {
+    grid-area: webview;
+    min-height: 0;
+}
+
+.layout-webview-big-readable .score-panel {
+    grid-area: score;
+    justify-content: center;
+    gap: 2.8vh;
+    padding: 2.2vh 1.4vw;
+}
+
+.layout-webview-big-readable .stats-panel {
+    display: none;
+}
+
+.layout-webview-big-readable .score-card {
+    padding: 2.4vh 1.5vw;
+    border-radius: 1.2vw;
+}
+
+.layout-webview-big-readable .player-name {
+    font-size: clamp(2.2rem, 4.4vh, 4.5rem);
+    line-height: 1;
+    margin-bottom: 1.2vh;
+    letter-spacing: .03em;
+}
+
+.layout-webview-big-readable .score {
+    font-size: clamp(6rem, 15vh, 12rem);
+    line-height: .9;
+    margin-bottom: 1.8vh;
+}
+
+.layout-webview-big-readable .stats {
+    font-size: clamp(1.8rem, 3.2vh, 3.3rem);
+    gap: 1.4vw;
+    justify-content: center;
+}
+
+.layout-webview-big-readable .checkout-panel {
+    margin-top: 0;
+    padding: 2.2vh 1.4vw;
+}
+
+.layout-webview-big-readable .checkout-panel h3 {
+    font-size: clamp(1.4rem, 2.4vh, 2.5rem);
+}
+
+.layout-webview-big-readable .checkout-value {
+    font-size: clamp(3rem, 6.5vh, 6rem);
+    line-height: 1;
+}
+
+.layout-webview-big-readable .webview-placeholder {
+    font-size: 3vh;
+}
+
+/* Layout 4: Big-Type / Distance-Readable (Score + Stats maximal aus Abstand lesbar) */
+.layout-big-type {
+    grid-template-columns: 3fr 1.5fr;
+    grid-template-areas: 'score stats';
+}
+
+.layout-big-type .webview-panel,
+.layout-big-type .board-panel {
+    display: none;
+}
+
+.layout-big-type .score-panel {
+    grid-area: score;
+}
+
+.layout-big-type .stats-panel {
+    grid-area: stats;
+}
+
+.layout-big-type .score-panel {
+    justify-content: center;
+    gap: 4vh;
+}
+
+.layout-big-type .score-card {
+    padding: 3vh 2vw;
+    border-radius: 1.2vw;
+}
+
+.layout-big-type .player-name {
+    font-size: 4vh;
+    margin-bottom: 1.5vh;
+}
+
+.layout-big-type .score {
+    font-size: 18vh;
+    margin-bottom: 2vh;
+}
+
+.layout-big-type .stats {
+    font-size: 3.5vh;
+    justify-content: center;
+    gap: 2vw;
+}
+
+.layout-big-type .stats-panel h3,
+.layout-big-type .checkout-panel h3 {
+    font-size: 2.5vh;
+}
+
+.layout-big-type .throws-list {
+    font-size: 3vh;
+    gap: 1vh;
+}
+
+.layout-big-type .throws-list li {
+    padding: 1vh 1vw;
+}
+
+.layout-big-type .checkout-panel {
+    margin-top: 2vh;
+    padding: 2vh;
+}
+
+.layout-big-type .checkout-value {
+    font-size: 8vh;
+}
+
 .board-panel,
+.webview-panel,
 .score-panel,
 .stats-panel {
     background: var(--panel);
@@ -79,21 +230,30 @@ html, body {
     overflow: hidden;
 }
 
-.board-panel {
+.board-panel,
+.webview-panel {
     align-items: center;
     justify-content: center;
 }
 
-.board-placeholder {
+.board-placeholder,
+.webview-placeholder {
     width: 100%;
     height: 100%;
     border: 0.2vw dashed var(--accent-dim);
     border-radius: 1vw;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     color: var(--accent-dim);
     font-size: 2vh;
+    text-align: center;
+}
+
+.webview-hint {
+    font-size: 1.4vh;
+    opacity: 0.7;
 }
 
 .score-panel {
@@ -140,6 +300,27 @@ html, body {
 .stats b {
     color: #fff;
     font-weight: 600;
+}
+
+.checkout-panel {
+    margin-top: 1vh;
+    padding: 1.5vh;
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 0.8vw;
+    text-align: center;
+}
+
+.checkout-panel h3 {
+    margin: 0 0 1vh;
+    font-size: 1.4vh;
+    text-transform: uppercase;
+    color: var(--accent-dim);
+}
+
+.checkout-value {
+    font-size: 4vh;
+    font-weight: 700;
+    color: var(--success);
 }
 
 .stats-panel h3 {
