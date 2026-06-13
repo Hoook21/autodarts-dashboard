@@ -1,36 +1,65 @@
 # Autodarts Dashboard
 
-Projektgrundlage für ein Autodarts-Dashboard im Querformat.
-
-## Grundidee
-
-Wir wollen eine Webanwendung bauen bzw. anpassen, die auf einem Querformat-Monitor am iMac gut nutzbar ist.
-
-Geplantes Layout:
-
-- links: Dartscheibe / Board-Ansicht
-- rechts: Scoring, Punktestand, Spieler-/Leg-/Set-Informationen und weitere relevante Anzeigen
+Dashboard für Autodarts im Querformat — optimiert für einen Landscape-Monitor am Dartboard.
 
 ## Ziel
 
-Eine übersichtliche Autodarts-Anzeige, die beim Spielen schnell erfassbar ist und auf einem breiten Bildschirm sinnvoll aufgeteilt wird.
+Eine klare, scrollfreie Anzeige für Live-Dart-Spiele. Alles auf einen Blick:
 
-## Aktueller Stand
+- Links: Dartscheibe / Board-Ansicht
+- Mitte: Spieler-Scores, Durchschnitt, letzte Wurf-Serie
+- Rechts: Historie der letzten Würfe und zusätzliche Statistiken
 
-- Projektordner auf dem iMac ist angelegt
-- GitHub-Repository ist angelegt
-- Erste neutrale Projektstruktur steht
-- konkrete Anforderungen, Screenshots, Layoutideen und technische Umsetzung müssen noch gesammelt werden
+## Projektstruktur
 
-## Nächster Schritt
+```
+autodarts-dashboard/
+├── index.html          # Haupt-Dashboard
+├── css/
+│   └── dashboard.css   # Landscape-Layout
+├── js/
+│   ├── config.js       # Board-ID, API-URL, Mock-Modus
+│   ├── api.js          # WebSocket / API / Mock-Daten
+│   └── dashboard.js    # UI-Logik
+├── mock/
+│   └── autodarts-mock.json  # (optional) statische Testdaten
+└── README.md
+```
 
-Erstmal gemeinsam sammeln:
+## Lokale Entwicklung
 
-1. Welche Informationen müssen rechts sichtbar sein?
-2. Welche Autodarts-Webansicht oder API/Quelle nutzen wir?
-3. Wie soll das Querformat-Layout grob aussehen?
-4. Welche Geräte/Browser/Monitorauflösung sind relevant?
+```bash
+# Repo klonen
+git clone https://github.com/Hoook21/autodarts-dashboard.git
+cd autodarts-dashboard
+
+# Einfacher HTTP-Server (z. B. Python)
+python3 -m http.server 8080
+
+# Im Browser öffnen
+open http://localhost:8080
+```
+
+Standardmäßig läuft das Dashboard mit **Mock-Daten**, damit man ohne live Board entwickeln kann.
+
+## Autodarts-API anbinden
+
+In `js/config.js`:
+
+```js
+CONFIG.useMockData = false;
+CONFIG.boardId = 'DEINE_BOARD_ID';
+```
+
+> ⚠️ **API / WebSocket URLs sind Platzhalter.**  
+> Die genaue Schnittstelle von Autodarts ist noch in [Issue #3](https://github.com/Hoook21/autodarts-dashboard/issues/3) zu klären.  
+> Bis dahin läuft das Dashboard sicher mit **Mock-Daten**.
+
+## Nächste Schritte
+
+Siehe [GitHub Issues](https://github.com/Hoook21/autodarts-dashboard/issues).
 
 ## Mitmachen
 
-Ideen, Layout-Skizzen, Hinweise zur Autodarts-Weboberfläche oder technische Vorschläge sind willkommen.
+- Ideen, Layout-Skizzen und technische Hinweise in Issues oder Discussions posten
+- Änderungen als Pull Request einreichen

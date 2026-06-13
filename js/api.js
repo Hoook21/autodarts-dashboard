@@ -1,0 +1,101 @@
+/**
+ * Autodarts Dashboard — API / WebSocket layer
+ * Handles live connection to Autodarts or falls back to mock data.
+ */
+
+(function (global) {
+    'use strict';
+
+    class AutodartsAPI {
+        constructor(config) {
+            this.config = config;
+            this.ws = null;
+            this.listeners = new Set();
+        }
+
+        onMessage(callback) {
+            this.listeners.add(callback);
+            return () => this.listeners.delete(callback);
+        }
+
+        emit(data) {
+            this.listeners.forEach((cb) => {
+                try {
+                    cb(data);
+                } catch (err) {
+                    console.error('Listener error:', err);
+                }
+            });
+        }
+
+        connect() {
+            if (this.config.useMockData) {
+                this.startMockStream();
+                return;
+            }
+
+            if (!this.config.boardId) {
+                console.warn('No boardId set — falling back to mock data.');
+                this.config.useMockData = true;
+                this.startMockStream();
+                return;
+            }
+
+            const url = this.config.wsUrl.replace('{boardId}', this.config.boardId);
+            this.ws = new WebSocket(url);
+
+            this.ws.addEventListener('open', () => {
+                console.log('Autodarts WS connected');
+            });
+
+            this.ws.addEventListener('message', (event) => {
+                let data;
+                try {
+                    data = JSON.parse(event.data);
+                } catch {
+                    data = { raw: event.data };
+                }
+                this.emit(data);
+            });
+
+            this.ws.addEventListener('close', () => {
+                console.warn('Autodarts WS closed — retrying in 3s');
+                setTimeout(() => this.connect(), 3000);
+            });
+
+            this.ws.addEventListener('error', (err) => {
+                console.error('Autodarts WS error:', err);
+            });
+        }
+
+        startMockStream() {
+            console.log('Using mock data stream');
+
+            const players = [
+                { name: 'Spieler 1', score: 501, last: [], avg: 0 },
+                { name: 'Spieler 2', score: 501, last: [], avg: 0 },
+            ];
+
+            const throws = [60, 57, 26, 100, 45, 83, 20, 140, 12, 81];
+
+            setInterval(() => {
+                const activeIndex = Math.floor(Date.now() / 3000) % 2;
+                const player = players[activeIndex];
+                const score = throws[Math.floor(Math.random() * throws.length)];
+
+                player.last.push(score);
+                if (player.last.length > 3) player.last.shift();
+                player.score = Math.max(0, player.score - score);
+                player.avg = (player.last.reduce((a, b) => a + b, 0) / player.last.length).toFixed(1);
+
+                this.emit({
+                    type: 'throw',
+                    activePlayer: activeIndex,
+                    players: players.map((p) => ({ ...p })),
+                });
+            }, this.config.mockUpdateIntervalMs);
+        }
+    }
+
+    global.AutodartsAPI = AutodartsAPI;
+})(window);
