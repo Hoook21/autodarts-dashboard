@@ -56,6 +56,27 @@ Das Layout kann per URL-Parameter gewechselt werden:
 
 Ungültige Werte fallen automatisch auf `webview-big-readable` zurück.
 
+## RC1 lokal testen
+
+Der aktuelle Release Candidate (`webview-big-readable`) ist in `main` integriert und kann ohne Autodarts-Hardware oder Live-Datenanbindung getestet werden:
+
+```bash
+# Repo klonen bzw. aktualisieren
+git clone https://github.com/Hoook21/autodarts-dashboard.git
+cd autodarts-dashboard
+
+# Lokaler Server starten
+python3 -m http.server 8080
+
+# Im Browser öffnen
+open http://localhost:8080/?layout=webview-big-readable
+```
+
+> ⚠️ **Aktuell handelt es sich um einen Frontend-/Integrationstest.**
+> Die Anzeige läuft mit Mock-Daten. Eine finale Live-Datenbindung an Autodarts ist noch in Arbeit (siehe [Issue #3](https://github.com/Hoook21/autodarts-dashboard/issues/3) und [Epic #17](https://github.com/Hoook21/autodarts-dashboard/issues/17)).
+
+Mehr Details und Preview zum RC1 gibt es unter [`docs/release-candidates/rc1-webview-big-readable/README.md`](docs/release-candidates/rc1-webview-big-readable/README.md).
+
 ## Autodarts-API anbinden
 
 In `js/config.js`:
@@ -65,8 +86,8 @@ CONFIG.useMockData = false;
 CONFIG.boardId = 'DEINE_BOARD_ID';
 ```
 
-> ⚠️ **API / WebSocket URLs sind Platzhalter.**  
-> Die genaue Schnittstelle von Autodarts ist noch in [Issue #3](https://github.com/Hoook21/autodarts-dashboard/issues/3) zu klären.  
+> ⚠️ **API / WebSocket URLs sind Platzhalter.**
+> Die genaue Schnittstelle von Autodarts ist noch in [Issue #3](https://github.com/Hoook21/autodarts-dashboard/issues/3) zu klären.
 > Bis dahin läuft das Dashboard sicher mit **Mock-Daten**.
 
 ## Nächste Schritte
