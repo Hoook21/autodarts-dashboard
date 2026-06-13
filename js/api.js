@@ -10,6 +10,7 @@
         constructor(config) {
             this.config = config;
             this.ws = null;
+            this.adapter = null;
             this.listeners = new Set();
         }
 
@@ -29,8 +30,17 @@
         }
 
         connect() {
+            // 1) Mock-Daten haben oberste Priorität, damit ?mock=1 und
+            //    Preview-/Layout-Tests unverändert funktionieren.
             if (this.config.useMockData) {
                 this.startMockStream();
+                return;
+            }
+
+            // 2) Live-Adapter/Bridge nur verwenden, wenn aktiv konfiguriert
+            //    (explizite Bridge-URL) und der Adapter geladen ist.
+            if (this.config.liveAdapterBridgeUrl && typeof window.AutodartsLiveAdapter !== 'undefined') {
+                this.connectLiveAdapter();
                 return;
             }
 
@@ -99,6 +109,33 @@
                     players: players.map((p) => ({ ...p })),
                 });
             }, this.config.mockUpdateIntervalMs);
+        }
+
+        connectLiveAdapter() {
+            if (!window.AutodartsLiveAdapter) {
+                console.warn('AutodartsLiveAdapter nicht geladen.');
+                this.fallbackToNotConnected();
+                return;
+            }
+
+            this.adapter = new window.AutodartsLiveAdapter(this.config);
+            this.adapter.onUpdate((data) => this.emit(data));
+
+            if (this.config.liveAdapterBridgeUrl) {
+                this.adapter.connectBridge(this.config.liveAdapterBridgeUrl);
+                console.log('Live-Adapter Bridge verbunden:', this.config.liveAdapterBridgeUrl);
+            } else {
+                this.adapter.listenPostMessage();
+            }
+        }
+
+        fallbackToNotConnected() {
+            this.emit({
+                type: 'status',
+                status: 'not-connected',
+                message: 'Warte auf Autodarts-Daten',
+                players: this.config.initialPlayers || [],
+            });
         }
     }
 
