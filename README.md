@@ -101,6 +101,13 @@ bei unterschiedlichen Auflösungen brauchbar bleibt.
 
 Mehr Details und Preview zum RC1 gibt es unter [`docs/release-candidates/rc1-webview-big-readable/README.md`](docs/release-candidates/rc1-webview-big-readable/README.md).
 
+## Architektur- und Entscheidungsrahmen
+
+Das Dashboard ist bewusst nur eine **zusätzliche Präsentationsschicht** — es
+ersetzt Autodarts nicht, patcht keine Original-Dateien und schreibt nicht in
+Autodarts hinein. Die technische Richtung steht in
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+
 ## iframe/Webview funktioniert nicht?
 
 Wenn Autodarts im Dashboard-iframe nur „Connecting to Board“ anzeigt, hilft `scripts/diagnose-iframe-environment.html`:
