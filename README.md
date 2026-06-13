@@ -1,15 +1,22 @@
 # Autodarts Dashboard
 
-Project workspace for planning and building an Autodarts dashboard.
+Projektgrundlage für ein späteres Autodarts-Dashboard.
 
-## Goal
+## Ziel
 
-Create a dashboard concept that works well on a landscape monitor and supports the local Autodarts setup.
+Ein Dashboard planen und entwickeln, das auf einem Querformat-Monitor gut nutzbar ist und das lokale Autodarts-Setup sinnvoll ergänzt.
 
-## Status
+## Aktueller Stand
 
-Initial project scaffold.
+Erste neutrale Projektstruktur. Konkrete lokale Setup-Details, Fotos, Pfade und private Notizen bleiben außerhalb von GitHub.
 
-## Privacy
+## Geplante Inhalte
 
-Keep local setup details, photos, paths, and private notes outside the Git repository unless intentionally prepared for sharing.
+- Anforderungen sammeln
+- grobes Layout/Mockup erstellen
+- technische Möglichkeiten prüfen
+- später Dashboard-Prototyp bauen
+
+## Datenschutz / lokale Daten
+
+Dieses Repository soll keine privaten lokalen Informationen enthalten. Alles Persönliche bleibt im lokalen Projektordner.
