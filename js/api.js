@@ -35,9 +35,13 @@
             }
 
             if (!this.config.boardId) {
-                console.warn('No boardId set — falling back to mock data.');
-                this.config.useMockData = true;
-                this.startMockStream();
+                console.warn('No boardId set — live Autodarts data not connected.');
+                this.emit({
+                    type: 'status',
+                    status: 'not-connected',
+                    message: 'Warte auf Autodarts-Daten',
+                    players: this.config.initialPlayers || [],
+                });
                 return;
             }
 
@@ -70,6 +74,7 @@
 
         startMockStream() {
             console.log('Using mock data stream');
+            if (this.mockTimer) clearInterval(this.mockTimer);
 
             const players = [
                 { name: 'Spieler 1', score: 501, last: [], avg: 0 },
@@ -78,7 +83,7 @@
 
             const throws = [60, 57, 26, 100, 45, 83, 20, 140, 12, 81];
 
-            setInterval(() => {
+            this.mockTimer = setInterval(() => {
                 const activeIndex = Math.floor(Date.now() / 3000) % 2;
                 const player = players[activeIndex];
                 const score = throws[Math.floor(Math.random() * throws.length)];

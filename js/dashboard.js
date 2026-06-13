@@ -5,8 +5,12 @@
 (function () {
     'use strict';
 
+    function getParams() {
+        return new URLSearchParams(window.location.search);
+    }
+
     function resolveLayout() {
-        const params = new URLSearchParams(window.location.search);
+        const params = getParams();
         const fromUrl = params.get('layout');
         if (fromUrl && CONFIG.availableLayouts.includes(fromUrl)) {
             return fromUrl;
@@ -14,7 +18,20 @@
         return CONFIG.layout || 'balanced';
     }
 
-    CONFIG.layout = resolveLayout();
+    function applyRuntimeParams() {
+        const params = getParams();
+        CONFIG.layout = resolveLayout();
+
+        if (['1', 'true', 'yes'].includes((params.get('mock') || '').toLowerCase())) {
+            CONFIG.useMockData = true;
+        }
+
+        if (['0', 'false', 'no'].includes((params.get('mock') || '').toLowerCase())) {
+            CONFIG.useMockData = false;
+        }
+    }
+
+    applyRuntimeParams();
 
     const api = new AutodartsAPI(CONFIG);
 
@@ -74,12 +91,29 @@
         const lastEl = index === 0 ? els.last1 : els.last2;
         const card = index === 0 ? els.p1 : els.p2;
 
-        scoreEl.textContent = player.score;
-        avgEl.textContent = player.avg;
-        lastEl.textContent = player.last.length ? player.last.join(' · ') : '—';
+        if (!scoreEl || !avgEl || !lastEl || !card) return;
 
-        card.querySelector('.player-name').textContent = player.name;
+        scoreEl.textContent = player.score ?? '—';
+        avgEl.textContent = player.avg ?? '—';
+        lastEl.textContent = Array.isArray(player.last) && player.last.length ? player.last.join(' · ') : '—';
+
+        card.querySelector('.player-name').textContent = player.name || `Spieler ${index + 1}`;
         card.classList.toggle('active', index === window.__activePlayer);
+    }
+
+    function setWaitingState(message = 'Warte auf Autodarts-Daten') {
+        updateCard(0, { name: 'Autodarts', score: '—', avg: '—', last: [] });
+        updateCard(1, { name: 'Live-Daten', score: '—', avg: '—', last: [] });
+        els.p1.classList.add('active');
+        els.p2.classList.remove('active');
+        if (els.checkout) els.checkout.textContent = '—';
+        if (els.throwsList) {
+            els.throwsList.replaceChildren();
+            const li = document.createElement('li');
+            li.textContent = 'Keine Mock-Würfe aktiv';
+            els.throwsList.appendChild(li);
+        }
+        els.status.textContent = message;
     }
 
     function updateCheckout(activePlayer) {
@@ -105,20 +139,33 @@
     }
 
     api.onMessage((data) => {
-        if (!data || !Array.isArray(data.players)) return;
+        if (!data) return;
+
+        if (data.type === 'status' && !Array.isArray(data.players)) {
+            setWaitingState(data.message);
+            return;
+        }
+
+        if (!Array.isArray(data.players) || data.players.length === 0) {
+            setWaitingState(data.message);
+            return;
+        }
 
         window.__activePlayer = data.activePlayer ?? 0;
 
-        data.players.forEach((p, i) => updateCard(i, p));
+        data.players.slice(0, 2).forEach((p, i) => updateCard(i, p));
         updateThrows(data.players, window.__activePlayer);
         updateCheckout(data.players[window.__activePlayer]);
 
-        els.status.textContent = `Am Zug: ${data.players[window.__activePlayer].name}`;
+        els.status.textContent = CONFIG.useMockData
+            ? `Mock: ${data.players[window.__activePlayer].name}`
+            : `Am Zug: ${data.players[window.__activePlayer].name}`;
     });
 
     document.addEventListener('DOMContentLoaded', () => {
         applyLayout();
-        els.status.textContent = CONFIG.useMockData ? 'Mock-Daten aktiv' : 'Verbinde…';
+        els.status.textContent = CONFIG.useMockData ? 'Mock-Daten aktiv' : 'Warte auf Autodarts-Daten';
+        if (!CONFIG.useMockData) setWaitingState();
         api.connect();
     });
 })();
