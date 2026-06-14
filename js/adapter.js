@@ -89,35 +89,55 @@
         }
 
         extractMatch(data) {
-            if (Array.isArray(data?.players)) return data;
-            if (Array.isArray(data?.match?.players)) return data.match;
-            if (Array.isArray(data?.state?.players)) return data.state;
-            if (Array.isArray(data?.payload?.players)) return data.payload;
+            if (this.looksLikeMatch(data)) return data;
+            if (this.looksLikeMatch(data?.body)) return data.body;
+            if (this.looksLikeMatch(data?.match)) return data.match;
+            if (this.looksLikeMatch(data?.state)) return data.state;
+            if (this.looksLikeMatch(data?.payload)) return data.payload;
+            if (this.looksLikeMatch(data?.data?.body)) return data.data.body;
             return null;
         }
 
+        looksLikeMatch(value) {
+            return !!value && typeof value === 'object' && (
+                Array.isArray(value.players) ||
+                Array.isArray(value.turns) ||
+                typeof value.score === 'number' ||
+                typeof value.turnScore === 'number'
+            );
+        }
+
         /**
-         * Mappt ein Autodarts-IMatch-Objekt auf das Dashboard-Datenmodell.
+         * Mappt ein Autodarts-Match-Objekt auf das Dashboard-Datenmodell.
+         * Unterstützt sowohl ältere IMatch-ähnliche Payloads als auch die in
+         * Safari beobachtete Single-Player-Form unter data.body.
          */
         mapMatchToDashboard(match) {
-            if (!match || !Array.isArray(match.players)) {
+            if (!match || typeof match !== 'object') {
                 console.warn('Live-Adapter: unerwartetes Match-Payload', match);
                 return null;
             }
 
-            const activeIndex = typeof match.player === 'number' ? match.player : 0;
+            const sourcePlayers = this.extractPlayers(match);
+            if (!sourcePlayers.length) {
+                console.warn('Live-Adapter: Match-Payload ohne Spieler', match);
+                return null;
+            }
 
-            const players = match.players.map((p, i) => {
-                const name = p?.name || p?.user?.name || `Spieler ${i + 1}`;
+            const activeIndex = this.extractActivePlayerIndex(match, sourcePlayers);
+
+            const players = sourcePlayers.map((p, i) => {
+                const name = p?.name || p?.user?.name || match.host?.name || `Spieler ${i + 1}`;
                 const stats = Array.isArray(match.stats) ? match.stats[i] : null;
-                const avg = stats?.average ?? stats?.dartsAverage ?? null;
+                const avg = stats?.average ?? stats?.dartsAverage ?? p?.average ?? match.first9Average ?? null;
 
                 return {
                     name,
                     score: this.extractScore(match, p, i),
-                    last: this.extractLastTurn(match, i),
+                    last: this.extractLastTurn(match, p, i),
                     avg,
                     busted: i === activeIndex ? match.turnBusted ?? false : false,
+                    turnScore: i === activeIndex && typeof match.turnScore === 'number' ? match.turnScore : null,
                 };
             });
 
@@ -126,9 +146,26 @@
                 activePlayer: activeIndex,
                 players,
                 raw: match,
-                gameFinished: !!match.gameFinished,
-                gameWinner: typeof match.gameWinner === 'number' ? match.gameWinner : null,
+                gameFinished: !!match.gameFinished || this.hasWinner(match),
+                gameWinner: this.extractWinner(match),
             };
+        }
+
+        extractPlayers(match) {
+            if (Array.isArray(match.players) && match.players.length) return match.players;
+            if (match.host) return [match.host];
+            return [];
+        }
+
+        extractActivePlayerIndex(match, players) {
+            if (typeof match.player === 'number') return match.player;
+            if (typeof match.activePlayer === 'number') return match.activePlayer;
+            const activePlayerId = match.activePlayerId || match.playerId;
+            if (activePlayerId) {
+                const index = players.findIndex((p) => p?.id === activePlayerId || p?.user?.id === activePlayerId);
+                if (index >= 0) return index;
+            }
+            return 0;
         }
 
         extractScore(match, player, index) {
@@ -141,21 +178,59 @@
                 if (typeof gameScore?.score === 'number') return gameScore.score;
                 if (typeof gameScore?.points === 'number') return gameScore.points;
             }
-            return player?.score ?? player?.points ?? null;
+            if (typeof player?.score === 'number') return player.score;
+            if (typeof player?.points === 'number') return player.points;
+
+            // Safari-Capture 2026-06-14: Single-Player-X01-Payload mit
+            // Restscore direkt auf Match-Ebene.
+            if (index === 0 && typeof match.score === 'number') return match.score;
+            return null;
         }
 
         /**
          * Extrahiert die letzte vollständige Aufnahme eines Spielers.
          */
-        extractLastTurn(match, playerIndex) {
+        extractLastTurn(match, player, playerIndex) {
             const turns = Array.isArray(match.turns) ? match.turns : [];
-            const playerTurns = turns.filter((t) => t?.player === playerIndex);
+            const playerId = player?.id || player?.user?.id;
+            const playerTurns = turns.filter((t) => {
+                if (typeof t?.player === 'number') return t.player === playerIndex;
+                if (t?.playerId && playerId) return t.playerId === playerId;
+                return playerIndex === 0;
+            });
             const last = playerTurns[playerTurns.length - 1];
-            if (!last) return [];
-            if (Array.isArray(last.throws)) {
-                return last.throws.map((t) => t?.score ?? t).filter((s) => typeof s === 'number');
+            if (!last) return typeof match.turnScore === 'number' && playerIndex === 0 ? [match.turnScore] : [];
+            if (Array.isArray(last.throws) && last.throws.length) {
+                return last.throws.map((t) => this.formatThrow(t)).filter(Boolean);
             }
-            return typeof last.score === 'number' ? [last.score] : [];
+            if (typeof last.points === 'number') return [last.points];
+            if (typeof last.score === 'number') return [last.score];
+            return typeof match.turnScore === 'number' && playerIndex === 0 ? [match.turnScore] : [];
+        }
+
+        formatThrow(throwData) {
+            if (typeof throwData === 'number') return throwData;
+            if (typeof throwData?.score === 'number') return throwData.score;
+            if (typeof throwData?.points === 'number') return throwData.points;
+            if (typeof throwData?.segment?.name === 'string') return throwData.segment.name;
+            if (typeof throwData?.segment?.number === 'number') {
+                const multiplier = throwData.segment.multiplier || 1;
+                const prefix = multiplier === 3 ? 'T' : multiplier === 2 ? 'D' : 'S';
+                return `${prefix}${throwData.segment.number}`;
+            }
+            return null;
+        }
+
+        hasWinner(match) {
+            const winner = this.extractWinner(match);
+            return winner !== null && winner !== undefined && winner !== false;
+        }
+
+        extractWinner(match) {
+            if (typeof match.gameWinner === 'number') return match.gameWinner;
+            if (typeof match.winner === 'number') return match.winner;
+            if (typeof match.winner === 'string') return match.winner;
+            return null;
         }
 
         /**

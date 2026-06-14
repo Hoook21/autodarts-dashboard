@@ -1,0 +1,75 @@
+{
+  "channel": "autodarts.matches",
+  "topic": "match-1.events",
+  "data": {
+    "body": {
+      "id": "match-1",
+      "createdAt": "2026-06-14T08:30:37Z",
+      "hasReferee": false,
+      "host": {
+        "id": "user-1",
+        "name": "hook",
+        "country": "de",
+        "average": 30.124191461837
+      },
+      "players": [
+        {
+          "id": "user-1",
+          "name": "hook",
+          "country": "de",
+          "average": 30.124191461837,
+          "boardId": "board-1",
+          "boardName": "my Board",
+          "boardType": "vantage",
+          "host": true
+        }
+      ],
+      "variant": "X01",
+      "type": "Local",
+      "score": 301,
+      "scoreUntil170": 141,
+      "first9Average": 32.666666666666664,
+      "first9Score": 98,
+      "less60": 13,
+      "plus60": 0,
+      "plus100": 0,
+      "plus140": 0,
+      "plus170": 0,
+      "total180": 0,
+      "winner": 0,
+      "turnBusted": false,
+      "turnScore": 3,
+      "turns": [
+        {
+          "id": "turn-1",
+          "playerId": "user-1",
+          "createdAt": "2026-06-14T08:39:11Z",
+          "finishedAt": "2026-06-14T09:00:01Z",
+          "round": 13,
+          "turn": 12,
+          "points": 3,
+          "score": 0,
+          "busted": false,
+          "throws": [
+            {
+              "id": "throw-1",
+              "createdAt": "2026-06-14T08:39:16Z",
+              "entry": "detected",
+              "throw": 0,
+              "coords": { "x": 0.07606374313299173, "y": -0.8112017675613605 },
+              "segment": {
+                "bed": "SingleOuter",
+                "multiplier": 1,
+                "name": "S3",
+                "number": 3
+              },
+              "detection": {
+                "clientVersion": "1.0.7"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
