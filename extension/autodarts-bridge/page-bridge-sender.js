@@ -25,6 +25,7 @@
     const CHANNEL = 'autodarts.matches';
     const ALLOWED_TOPICS = ['state', 'events', 'game-events', 'corrections'];
     const REDACT_FIELDS = ['code', 'token', 'ticket', 'authorization', 'cookie', 'session'];
+    const MESSAGE_TYPE = 'autodarts-dashboard-bridge:payload';
 
     const state = {
         ws: null,
@@ -93,6 +94,14 @@
         }
     }
 
+    function sendToContentScript(payload) {
+        try {
+            window.postMessage({ type: MESSAGE_TYPE, payload }, '*');
+        } catch (err) {
+            console.warn('[autodarts-bridge-sender] postMessage-Fehler:', err);
+        }
+    }
+
     function sendToBridge(payload) {
         if (state.closed) return;
         ensureBridge();
@@ -116,6 +125,7 @@
 
         const redacted = redact(payload);
         console.log('[autodarts-bridge-sender] weitergeleitet (' + source + '):', redacted.topic);
+        sendToContentScript(redacted);
         sendToBridge(redacted);
     }
 

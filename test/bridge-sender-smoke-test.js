@@ -6,6 +6,7 @@ const assert = require('node:assert/strict');
 const source = fs.readFileSync(path.join(__dirname, '..', 'scripts', 'autodarts-bridge-sender.js'), 'utf8');
 
 const sent = [];
+const posted = [];
 const openSockets = [];
 
 class FakeWebSocket {
@@ -43,13 +44,14 @@ class FakeWebSocket {
 }
 
 const sandbox = {
-    window: { WebSocket: FakeWebSocket },
+    window: { WebSocket: FakeWebSocket, postMessage: (payload, targetOrigin) => posted.push({ payload, targetOrigin }) },
     console,
     setTimeout,
     WebSocket: FakeWebSocket,
     MessageEvent: function () {},
 };
 sandbox.window = sandbox;
+sandbox.postMessage = (payload, targetOrigin) => posted.push({ payload, targetOrigin });
 
 // MessageEvent.prototype mocken
 const proto = {};
@@ -75,6 +77,9 @@ function flush(ms = 50) {
     await flush();
 
     assert.equal(sent.length, 1, 'Payload wurde weitergeleitet');
+    assert.equal(posted.length, 1, 'Payload wurde per postMessage an Content-Script gemeldet');
+    assert.equal(posted[0].payload.type, 'autodarts-dashboard-bridge:payload');
+    assert.equal(posted[0].payload.payload.topic, 'match-1.state');
     assert.equal(sent[0].channel, 'autodarts.matches');
     assert.equal(sent[0].topic, 'match-1.state');
     assert.equal(sent[0].data.score, 301);
@@ -91,6 +96,7 @@ function flush(ms = 50) {
     await flush();
 
     assert.equal(sent.length, 2);
+    assert.equal(posted.length, 2);
     assert.equal(sent[1].data.code, '<redacted>');
     assert.equal(sent[1].data.token, '<redacted>');
 
@@ -101,6 +107,7 @@ function flush(ms = 50) {
     ws._emit('message', ignoredEvent);
     await flush();
     assert.equal(sent.length, 2, 'unerlaubtes Topic wurde nicht weitergeleitet');
+    assert.equal(posted.length, 2, 'unerlaubtes Topic wurde nicht per postMessage gemeldet');
 
     // Channel-Filter-Test
     const lobbyEvent = {
@@ -109,11 +116,13 @@ function flush(ms = 50) {
     ws._emit('message', lobbyEvent);
     await flush();
     assert.equal(sent.length, 2, 'falscher Channel wurde nicht weitergeleitet');
+    assert.equal(posted.length, 2, 'falscher Channel wurde nicht per postMessage gemeldet');
 
     // Duplikat-Schutz: identisches Event-Objekt nur einmal weiterleiten
     ws._emit('message', event);
     await flush();
     assert.equal(sent.length, 2, 'identisches Event wurde doppelt weitergeleitet');
+    assert.equal(posted.length, 2, 'identisches Event wurde doppelt per postMessage gemeldet');
 
     console.log('bridge-sender-smoke-test: OK');
 })();
