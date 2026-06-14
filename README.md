@@ -122,6 +122,18 @@ open http://localhost:8080/scripts/diagnose-iframe-environment.html
 
 Die Seite zeigt, welche Browser-APIs (`navigator.usb`, `navigator.hid`, `navigator.bluetooth`, `navigator.mediaDevices`) im aktuellen Browser/Profil verfügbar sind. Damit lässt sich in [Issue #18](https://github.com/Hoook21/autodarts-dashboard/issues/18) gezielt prüfen, ob es am iframe oder am Headless-Browser-Profil liegt.
 
+## Live-Bridge / Browser-Extension POC
+
+Für echte Autodarts-Play-Livedaten ist der bevorzugte lokale POC jetzt:
+
+1. Dashboard-Server starten: `python3 -m http.server 8080`
+2. Bridge starten: `. .venv/bin/activate && python3 scripts/bridge_poc.py`
+3. Dashboard öffnen: `http://localhost:8080/?layout=webview-big-readable&bridge=ws://localhost:9876`
+4. Extension aus `extension/autodarts-bridge/` als unpacked Extension laden bzw. später als Safari Web Extension verpacken.
+5. `https://play.autodarts.io` nach Aktivierung der Extension neu laden und lokales Match starten.
+
+Der alte Bookmarklet-Weg ist nur noch Debug/Legacy, weil Safari `javascript:` in der Adresszeile blockt und späte Injection den Autodarts-WebSocket verpassen kann.
+
 ## Autodarts-API anbinden
 
 In `js/config.js`:

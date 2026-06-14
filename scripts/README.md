@@ -38,9 +38,19 @@ Dashboard und Sender verbinden sich beide mit:
 ws://localhost:9876
 ```
 
+## Browser-Extension-Pfad
+
+Für echte Safari-/darts-hub-Tests ist der Bookmarklet-Weg nicht stabil genug. Der bevorzugte nächste Pfad ist die WebExtension unter:
+
+```text
+extension/autodarts-bridge/
+```
+
+Sie injiziert den Sender bei `document_start` auf `https://play.autodarts.io/*`, bevor Autodarts seinen Match-WebSocket öffnet. Details stehen in [`extension/autodarts-bridge/README.md`](../extension/autodarts-bridge/README.md).
+
 ## `autodarts-bridge-sender.js`
 
-Bookmarklet/Injected-Script für `https://play.autodarts.io`. Es lauscht auf WebSocket-Nachrichten im Channel `autodarts.matches`, filtert erlaubte Topics und leitet redigierte Payloads persistent an die lokale Bridge (`ws://localhost:9876`) weiter.
+Legacy Bookmarklet/Injected-Script für `https://play.autodarts.io`. Es lauscht auf WebSocket-Nachrichten im Channel `autodarts.matches`, filtert erlaubte Topics und leitet redigierte Payloads persistent an die lokale Bridge (`ws://localhost:9876`) weiter.
 
 ### Verwendung
 
@@ -58,7 +68,7 @@ Bookmarklet/Injected-Script für `https://play.autodarts.io`. Es lauscht auf Web
 javascript:(function(){var script=document.createElement('script');script.src='http://localhost:8080/scripts/autodarts-bridge-sender.js';document.head.appendChild(script);})()
 ```
 
-Achtung: Das ist ein Proof-of-Concept. Es filtert Topics, redigiert `code`/`token`/`ticket`/`authorization`/`cookie`/`session` und persistiert keine Auth-Daten. Die Verbindung zur Bridge wird wiederverwendet; ausstehende Nachrichten werden in einer kurzen Queue gepuffert.
+Achtung: Das ist ein Proof-of-Concept und in Safari über die Adresszeile nicht zuverlässig, weil Safari `javascript:` im Smart Search Field blockt. Für reale Tests bevorzugt die WebExtension nutzen. Es Es filtert Topics, redigiert `code`/`token`/`ticket`/`authorization`/`cookie`/`session` und persistiert keine Auth-Daten. Die Verbindung zur Bridge wird wiederverwendet; ausstehende Nachrichten werden in einer kurzen Queue gepuffert.
 
 ## Weitere Skripte
 

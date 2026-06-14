@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "Autodarts Dashboard Bridge",
+  "version": "0.1.0",
+  "description": "Forwards redacted Autodarts match WebSocket payloads to the local dashboard bridge.",
+  "permissions": [],
+  "host_permissions": [
+    "https://play.autodarts.io/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://play.autodarts.io/*"],
+      "js": ["content-script.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["page-bridge-sender.js"],
+      "matches": ["https://play.autodarts.io/*"]
+    }
+  ]
+}
