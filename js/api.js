@@ -37,9 +37,11 @@
                 return;
             }
 
-            // 2) Live-Adapter/Bridge nur verwenden, wenn aktiv konfiguriert
-            //    (explizite Bridge-URL) und der Adapter geladen ist.
-            if (this.config.liveAdapterBridgeUrl && typeof window.AutodartsLiveAdapter !== 'undefined') {
+            // 2) Live-Adapter verwenden, wenn er geladen ist. Ohne explizite
+            //    Bridge-URL lauscht er passiv auf postMessage von Extension /
+            //    Injected-Script. Das ist weiterhin read-only und erzeugt keine
+            //    Fake-Daten im echten Board-Test.
+            if (typeof window.AutodartsLiveAdapter !== 'undefined') {
                 this.connectLiveAdapter();
                 return;
             }
@@ -120,6 +122,13 @@
 
             this.adapter = new window.AutodartsLiveAdapter(this.config);
             this.adapter.onUpdate((data) => this.emit(data));
+
+            this.emit({
+                type: 'status',
+                status: 'waiting-live-adapter',
+                message: 'Warte auf Autodarts-Daten',
+                players: this.config.initialPlayers || [],
+            });
 
             if (this.config.liveAdapterBridgeUrl) {
                 this.adapter.connectBridge(this.config.liveAdapterBridgeUrl);
