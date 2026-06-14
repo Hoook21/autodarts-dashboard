@@ -26,6 +26,14 @@
     const ALLOWED_TOPICS = ['state', 'events', 'game-events', 'corrections'];
     const REDACT_FIELDS = ['code', 'token', 'ticket', 'authorization', 'cookie', 'session'];
 
+    const state = {
+        ws: null,
+        queue: [],
+        opened: false,
+        closed: false,
+        seenEvents: new WeakSet(),
+    };
+
     function isAllowedTopic(topic) {
         if (typeof topic !== 'string') return false;
         const suffix = topic.split('.').pop();
@@ -48,37 +56,85 @@
         return out;
     }
 
-    function sendToBridge(payload) {
+    function ensureBridge() {
+        if (state.ws && (state.ws.readyState === WebSocket.CONNECTING || state.ws.readyState === WebSocket.OPEN)) {
+            return;
+        }
+        if (state.closed) return;
+
         try {
-            const ws = new WebSocket(BRIDGE_URL);
-            ws.addEventListener('open', () => {
-                ws.send(JSON.stringify(payload));
-                ws.close();
+            state.ws = new WebSocket(BRIDGE_URL);
+            state.opened = false;
+
+            state.ws.addEventListener('open', () => {
+                state.opened = true;
+                console.log('[autodarts-bridge-sender] Bridge verbunden');
+                while (state.queue.length) {
+                    const item = state.queue.shift();
+                    try {
+                        state.ws.send(JSON.stringify(item));
+                    } catch (err) {
+                        console.error('[autodarts-bridge-sender] Sendefehler (flush):', err);
+                    }
+                }
             });
-            ws.addEventListener('error', (err) => {
-                console.warn('[autodarts-bridge-sender] Bridge nicht erreichbar:', err);
+
+            state.ws.addEventListener('close', () => {
+                state.opened = false;
+                state.ws = null;
+                console.warn('[autodarts-bridge-sender] Bridge getrennt');
+            });
+
+            state.ws.addEventListener('error', (err) => {
+                console.warn('[autodarts-bridge-sender] Bridge-Fehler:', err);
             });
         } catch (err) {
-            console.error('[autodarts-bridge-sender] Sendefehler:', err);
+            console.error('[autodarts-bridge-sender] Verbindungsfehler:', err);
         }
+    }
+
+    function sendToBridge(payload) {
+        if (state.closed) return;
+        ensureBridge();
+        if (state.opened && state.ws && state.ws.readyState === WebSocket.OPEN) {
+            try {
+                state.ws.send(JSON.stringify(payload));
+            } catch (err) {
+                console.error('[autodarts-bridge-sender] Sendefehler:', err);
+                state.queue.push(payload);
+            }
+        } else {
+            state.queue.push(payload);
+            if (state.queue.length > 50) state.queue.shift();
+        }
+    }
+
+    function handlePayload(payload, source) {
+        if (!payload || typeof payload !== 'object') return;
+        if (payload.channel !== CHANNEL) return;
+        if (!isAllowedTopic(payload.topic)) return;
+
+        const redacted = redact(payload);
+        console.log('[autodarts-bridge-sender] weitergeleitet (' + source + '):', redacted.topic);
+        sendToBridge(redacted);
     }
 
     function interceptWebSocket() {
         const OriginalWebSocket = window.WebSocket;
+        if (!OriginalWebSocket) return;
+
         window.WebSocket = function (...args) {
             const ws = new OriginalWebSocket(...args);
             ws.addEventListener('message', (event) => {
+                if (state.seenEvents.has(event)) return;
+                state.seenEvents.add(event);
                 let payload;
                 try {
                     payload = JSON.parse(event.data);
                 } catch {
                     return;
                 }
-                if (payload.channel !== CHANNEL) return;
-                if (!isAllowedTopic(payload.topic)) return;
-                const redacted = redact(payload);
-                console.log('[autodarts-bridge-sender] weitergeleitet:', redacted.topic);
-                sendToBridge(redacted);
+                handlePayload(payload, 'WebSocket');
             });
             return ws;
         };
@@ -100,13 +156,11 @@
             configurable: true,
             get: function () {
                 const value = getData.call(this);
+                if (state.seenEvents.has(this)) return value;
+                state.seenEvents.add(this);
                 try {
                     const payload = JSON.parse(value);
-                    if (payload.channel === CHANNEL && isAllowedTopic(payload.topic)) {
-                        const redacted = redact(payload);
-                        console.log('[autodarts-bridge-sender] weitergeleitet (MessageEvent):', redacted.topic);
-                        sendToBridge(redacted);
-                    }
+                    handlePayload(payload, 'MessageEvent');
                 } catch {
                     // Nicht-JSON-Nachrichten ignorieren
                 }
@@ -115,7 +169,26 @@
         });
     }
 
-    if (window.WebSocket) interceptWebSocket();
+    function teardown() {
+        state.closed = true;
+        if (state.ws) {
+            try {
+                state.ws.close();
+            } catch (err) {
+                // ignore
+            }
+        }
+    }
+
+    interceptWebSocket();
     interceptMessageEvent();
+    ensureBridge();
+
+    window.__autodartsBridgeSender = {
+        active: true,
+        teardown,
+        stats: () => ({ queueLength: state.queue.length, connected: state.opened }),
+    };
+
     console.log('[autodarts-bridge-sender] Aktiv. Leitet erlaubte autodarts.matches-Topics an', BRIDGE_URL, 'weiter.');
 })();
