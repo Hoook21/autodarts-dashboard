@@ -61,16 +61,7 @@ async def handler(websocket):
         print(f"[bridge] client disconnected")
 
 
-async def register(websocket):
-    """Legacy hook, wird nicht mehr benötigt; Clients werden in handler() registriert."""
-    connected_clients.add(websocket)
-
-
 connected_clients = set()
-
-
-async def register(websocket):
-    connected_clients.add(websocket)
 
 
 async def main():
