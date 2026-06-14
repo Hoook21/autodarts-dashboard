@@ -35,5 +35,7 @@ assert.equal(appended[0].dataset.autodartsDashboardBridge, 'true');
 
 const pageSender = fs.readFileSync(path.join(extensionDir, 'page-bridge-sender.js'), 'utf8');
 new vm.Script(pageSender, { filename: 'page-bridge-sender.js' });
+const scriptSender = fs.readFileSync(path.join(root, 'scripts', 'autodarts-bridge-sender.js'), 'utf8');
+assert.equal(pageSender, scriptSender, 'extension page sender must stay in sync with scripts/autodarts-bridge-sender.js');
 
 console.log('extension-smoke-test: OK');
