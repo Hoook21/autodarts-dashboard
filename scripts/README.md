@@ -38,4 +38,25 @@ Dashboard und Sender verbinden sich beide mit:
 ws://localhost:9876
 ```
 
+## `autodarts-bridge-sender.js`
+
+Minimales Bookmarklet/Injected-Script für `https://play.autodarts.io`. Es lauscht auf WebSocket-Nachrichten im Channel `autodarts.matches` und leitet redigierte Payloads an die lokale Bridge (`ws://localhost:9876`) weiter.
+
+### Verwendung
+
+1. Bridge starten:
+   ```bash
+   python3 scripts/bridge_poc.py
+   ```
+2. Diesen Code als Lesezeichen im Browser speichern oder in die DevTools-Konsole auf `play.autodarts.io` einfügen.
+3. Dashboard in anderem Tab öffnen.
+
+```javascript
+javascript:(function(){var script=document.createElement('script');script.src='http://localhost:8080/scripts/autodarts-bridge-sender.js';document.head.appendChild(script);})()
+```
+
+Achtung: Das ist ein Proof-of-Concept. Es filtert Topics, redigiert `code`/`token`/`ticket`/`authorization`/`cookie`/`session` und persistiert keine Auth-Daten.
+
+## Weitere Skripte
+
 Die Bridge leitet Nachrichten im Channel `autodarts.matches` mit Topics endend auf `.state`, `.events`, `.game-events` oder `.corrections` an alle anderen verbundenen Clients weiter. Sie persistiert keine Auth-Daten und filtert alles andere heraus.
