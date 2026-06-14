@@ -40,7 +40,7 @@ ws://localhost:9876
 
 ## `autodarts-bridge-sender.js`
 
-Minimales Bookmarklet/Injected-Script für `https://play.autodarts.io`. Es lauscht auf WebSocket-Nachrichten im Channel `autodarts.matches` und leitet redigierte Payloads an die lokale Bridge (`ws://localhost:9876`) weiter.
+Bookmarklet/Injected-Script für `https://play.autodarts.io`. Es lauscht auf WebSocket-Nachrichten im Channel `autodarts.matches`, filtert erlaubte Topics und leitet redigierte Payloads persistent an die lokale Bridge (`ws://localhost:9876`) weiter.
 
 ### Verwendung
 
@@ -49,13 +49,16 @@ Minimales Bookmarklet/Injected-Script für `https://play.autodarts.io`. Es lausc
    python3 scripts/bridge_poc.py
    ```
 2. Diesen Code als Lesezeichen im Browser speichern oder in die DevTools-Konsole auf `play.autodarts.io` einfügen.
-3. Dashboard in anderem Tab öffnen.
+3. Dashboard in anderem Tab öffnen, z. B. mit:
+   ```text
+   http://localhost:8080/?layout=webview-big-readable&bridge=ws://localhost:9876
+   ```
 
 ```javascript
 javascript:(function(){var script=document.createElement('script');script.src='http://localhost:8080/scripts/autodarts-bridge-sender.js';document.head.appendChild(script);})()
 ```
 
-Achtung: Das ist ein Proof-of-Concept. Es filtert Topics, redigiert `code`/`token`/`ticket`/`authorization`/`cookie`/`session` und persistiert keine Auth-Daten.
+Achtung: Das ist ein Proof-of-Concept. Es filtert Topics, redigiert `code`/`token`/`ticket`/`authorization`/`cookie`/`session` und persistiert keine Auth-Daten. Die Verbindung zur Bridge wird wiederverwendet; ausstehende Nachrichten werden in einer kurzen Queue gepuffert.
 
 ## Weitere Skripte
 
