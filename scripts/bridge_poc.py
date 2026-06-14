@@ -33,6 +33,7 @@ def is_allowed(payload: dict) -> bool:
 
 async def handler(websocket):
     print(f"[bridge] client connected from {websocket.remote_address}")
+    connected_clients.add(websocket)
     try:
         async for message in websocket:
             try:
@@ -58,6 +59,11 @@ async def handler(websocket):
     finally:
         connected_clients.discard(websocket)
         print(f"[bridge] client disconnected")
+
+
+async def register(websocket):
+    """Legacy hook, wird nicht mehr benötigt; Clients werden in handler() registriert."""
+    connected_clients.add(websocket)
 
 
 connected_clients = set()
