@@ -2,6 +2,8 @@
 
 Status: **Architekturentscheidung / Plan** für Issue #31.
 
+Update 2026-06-14: Der Bookmarklet-Weg ist in Safari nicht stabil genug (`javascript:` im Smart Search Field blockiert, späte Console-Injection verpasst WebSocket-Initialisierung). Der nächste POC-Pfad ist deshalb eine echte WebExtension unter `extension/autodarts-bridge/`, die bei `document_start` injiziert.
+
 Ziel: Das Dashboard soll echte Autodarts-Live-Daten anzeigen, ohne Autodarts zu patchen, Secrets zu persistieren oder zu viel Logik zu duplizieren.
 
 ---
@@ -30,7 +32,7 @@ Dashboard läuft als `custom-url` in `lbormann/darts-hub`, also getrennt vom Pla
 | `postMessage` aus Play-Tab an Dashboard-Tab | hoch | mittel | nein | niedrig |
 | `BroadcastChannel` | hoch | mittel | nein | niedrig |
 | Lokaler WebSocket-Proxy / Bridge | hoch | hoch | ja | mittel |
-| Browser-Extension + lokaler Port | hoch | hoch | ja | mittel |
+| Browser-Extension + lokale Bridge | hoch | hoch | ja | mittel |
 | Dashboard im iframe von Play | fraglich | niedrig | nein | hoch |
 
 Empfehlung:
@@ -69,7 +71,7 @@ autodarts.matches/<matchId>.challenge
 
 ## 7. Empfohlene nächste Schritte
 
-1. Bookmarklet/Extension-Entwurf, der `autodarts.matches`-Nachrichten aus dem Play-Tab filtert.
+1. WebExtension-Entwurf, der bei `document_start` `autodarts.matches`-Nachrichten aus dem Play-Tab filtert. Der Bookmarklet-Weg bleibt nur Legacy/Debug.
 2. Lokaler Mini-Bridge-Server (Node.js oder Python), der per WebSocket lauscht und gefilterte Payloads an das Dashboard weitergibt.
 3. Dashboard-Integration so erweitern, dass es neben `postMessage` auch eine lokale Bridge-URL nutzen kann.
 4. Test mit echter lokaler Runde und Redaktion der Daten vor dem Weiterleiten.
