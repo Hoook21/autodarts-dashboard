@@ -22,6 +22,30 @@ Quelle: [`creazy231/tools-for-autodarts`](https://github.com/creazy231/tools-for
 | `autodarts.boards.images` | Kamerabild/Frames |
 | `autodarts.tournaments` | Turnierinformationen |
 
+## Live-Capture-Befund 2026-06-14
+
+Der lokale Board-WebSocket `ws://127.0.0.1:3180/api/events` liefert nach aktuellem Test nur Board-/Kameraevents (z. B. `cam_stats`, `stats`), aber keine belastbaren Match-/Score-/Throw-Daten.
+
+Für den Score-Sync ist stattdessen die Autodarts-Play Match-Verbindung relevant:
+
+- API-Basis: `https://api.autodarts.io/...`
+- Match-WebSocket: `wss://play.ws.autodarts.io/ms/v0/subscribe?code=...`
+- Tickets/Codes werden offenbar vorher über `POST /tickets` geholt.
+
+Wichtig: Tickets, Cookies, Codes und andere Auth-Daten dürfen nicht ins Repo.
+
+Bekannte Match-Topics unter `autodarts.matches`:
+
+- `<matchId>.state`
+- `<matchId>.events`
+- `<matchId>.game-events`
+- `<matchId>.corrections`
+- `<matchId>.viewers`
+- `<matchId>.referee`
+- `<matchId>.challenge`
+
+Konsequenz für `js/adapter.js`: Der Adapter akzeptiert neben einfachen `{ channel: 'autodarts.matches', data }`-Payloads auch Topic-Envelopes wie `{ channel: 'autodarts.matches', topic: '<matchId>.state', data }`. Die eigentliche authentifizierte WebSocket-Anbindung bleibt Aufgabe einer separaten Extension/Bridge; das Dashboard selbst bleibt read-only.
+
 ## Match-Datenmodell (vereinfacht)
 
 Das `IMatch`-Objekt aus `utils/websocket-helpers.ts` enthält mindestens:
@@ -63,8 +87,8 @@ Relevantes Mapping für das Dashboard:
 
 Das Grundgerüst liegt in `js/adapter.js`:
 
-- Empfängt postMessage- oder WebSocket-Payloads.
-- Filtert auf Channel `autodarts.matches`.
+- Empfängt postMessage- oder lokale WebSocket-Bridge-Payloads.
+- Filtert auf Channel `autodarts.matches` bzw. bekannte Match-Topics (`<matchId>.state`, `.events`, `.game-events`, `.corrections`).
 - Mappt Spieler, Scores, aktiven Spieler, letzte Aufnahme und Average.
 - Gibt `gameFinished`, `gameWinner` und `turnBusted` weiter, damit das Dashboard später Bust/Game-Shot anzeigen kann.
 
@@ -104,7 +128,8 @@ http://localhost:8080/?bridge=ws://localhost:9001
 
 ## Nächste Schritte
 
-- [ ] Lokale Runde starten und tatsächliche `autodarts.matches`-Payloads mitschneiden.
-- [ ] Mapping-Tabelle aus dieser Datei anhand echter Daten verifizieren/korrigieren.
+- [x] Erste lokale Runde starten und Datenquelle eingrenzen: Board-Port reicht nicht; Match-WebSocket/Topics sind relevant.
+- [ ] Tatsächliche `autodarts.matches`-Payloads aus `play.ws.autodarts.io/ms/v0/subscribe?...` mitschneiden.
+- [ ] Mapping-Tabelle aus dieser Datei anhand echter Payloads verifizieren/korrigieren.
 - [ ] Minimalen Proof-of-Concept für den Übertragungsweg bauen (siehe `js/adapter.js`).
 - [ ] Issue #31 mit Ergebnissen aktualisieren.

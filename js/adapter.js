@@ -16,6 +16,7 @@
     'use strict';
 
     const CHANNEL = 'autodarts.matches';
+    const MATCH_TOPICS = ['state', 'events', 'game-events', 'corrections'];
 
     class AutodartsLiveAdapter {
         constructor(config = {}) {
@@ -41,23 +42,58 @@
 
         /**
          * Versucht, eine eingehende Nachricht als Autodarts-Match-Event zu parsen.
-         * Akzeptiert zwei Formen:
+         * Akzeptiert u. a. diese Formen:
          *   { channel: 'autodarts.matches', data: IMatch }
          *   { type: 'autodarts.matches', payload: IMatch }
+         *   { channel: 'autodarts.matches', topic: '<matchId>.state', data: IMatch }
+         *   { channel: 'autodarts.matches', topic: '<matchId>.events', data: { match: IMatch } }
          */
         receiveMessage(event) {
-            const payload = event?.data;
+            const payload = this.parsePayload(event?.data);
             if (!payload || typeof payload !== 'object') return;
 
             const channel = payload.channel || payload.type;
-            const data = payload.data || payload.payload;
+            const topic = payload.topic || payload.subject || payload.event;
+            const rawData = payload.data || payload.payload || payload.match || payload.state;
 
-            if (channel !== CHANNEL || !data || typeof data !== 'object') return;
+            if (!this.isMatchEnvelope(channel, topic) || !rawData || typeof rawData !== 'object') return;
 
-            const mapped = this.mapMatchToDashboard(data);
+            const match = this.extractMatch(rawData);
+            if (!match) return;
+
+            const mapped = this.mapMatchToDashboard(match);
             if (mapped) {
                 this.emit(mapped);
             }
+        }
+
+        parsePayload(payload) {
+            if (typeof payload !== 'string') return payload;
+            try {
+                return JSON.parse(payload);
+            } catch {
+                return null;
+            }
+        }
+
+        isMatchEnvelope(channel, topic) {
+            if (channel === CHANNEL) return true;
+            if (typeof topic !== 'string') return false;
+            if (topic.startsWith(`${CHANNEL}.`)) return true;
+
+            // Autodarts Play nutzt nach aktuellem Capture-Befund Topics wie
+            // <matchId>.state / <matchId>.events unter dem Channel
+            // autodarts.matches. Falls eine Bridge nur das Topic weitergibt,
+            // akzeptieren wir die bekannten Match-Endungen ebenfalls.
+            return MATCH_TOPICS.some((suffix) => topic.endsWith(`.${suffix}`));
+        }
+
+        extractMatch(data) {
+            if (Array.isArray(data?.players)) return data;
+            if (Array.isArray(data?.match?.players)) return data.match;
+            if (Array.isArray(data?.state?.players)) return data.state;
+            if (Array.isArray(data?.payload?.players)) return data.payload;
+            return null;
         }
 
         /**
@@ -78,7 +114,7 @@
 
                 return {
                     name,
-                    score: Array.isArray(match.scores) ? match.scores[i] : p?.score ?? null,
+                    score: this.extractScore(match, p, i),
                     last: this.extractLastTurn(match, i),
                     avg,
                     busted: i === activeIndex ? match.turnBusted ?? false : false,
@@ -93,6 +129,19 @@
                 gameFinished: !!match.gameFinished,
                 gameWinner: typeof match.gameWinner === 'number' ? match.gameWinner : null,
             };
+        }
+
+        extractScore(match, player, index) {
+            if (Array.isArray(match.scores) && typeof match.scores[index] === 'number') {
+                return match.scores[index];
+            }
+            if (Array.isArray(match.gameScores)) {
+                const gameScore = match.gameScores[index];
+                if (typeof gameScore === 'number') return gameScore;
+                if (typeof gameScore?.score === 'number') return gameScore.score;
+                if (typeof gameScore?.points === 'number') return gameScore.points;
+            }
+            return player?.score ?? player?.points ?? null;
         }
 
         /**
