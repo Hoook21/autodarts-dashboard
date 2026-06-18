@@ -134,6 +134,55 @@ Für echte Autodarts-Play-Livedaten ist der bevorzugte lokale POC jetzt:
 
 Der alte Bookmarklet-Weg ist nur noch Debug/Legacy, weil Safari `javascript:` in der Adresszeile blockt und späte Injection den Autodarts-WebSocket verpassen kann.
 
+### Safari-Testnotiz vom 2026-06-18
+
+Der lokale Safari-Pfad wurde mit dieser Kette erfolgreich verifiziert:
+
+```text
+https://play.autodarts.io
+  -> Safari Web Extension content script
+  -> extension background bridge
+  -> ws://localhost:9876
+  -> Dashboard mit ?bridge=ws://localhost:9876
+```
+
+Im Test war der Extension-Marker auf `play.autodarts.io` sichtbar:
+
+```text
+data-autodarts-dashboard-bridge-content-script="loaded"
+```
+
+Ein simulierter Autodarts-Match-Payload aus dem Play-Tab wurde im Dashboard
+angezeigt. Erwartete Anzeige im Dashboard-Test:
+
+```text
+Status: Am Zug: Screen Test
+Score: 261
+Letzter Wurf: 60
+```
+
+Falls Safari einen alten `localhost:8080`-Tab nicht mehr sauber lädt, kann der
+Dashboard-Server testweise auf einem anderen Port laufen:
+
+```bash
+python3 -m http.server 8765
+```
+
+Dashboard-URL:
+
+```text
+http://localhost:8765/?layout=webview-big-readable&bridge=ws%3A%2F%2Flocalhost%3A9876
+```
+
+Für längere lokale Board-Tests kann man Server und Bridge in `screen` laufen
+lassen:
+
+```bash
+screen -dmS autodarts-dashboard-http zsh -lc 'cd /path/to/autodarts-dashboard && python3 -u -m http.server 8765'
+screen -dmS autodarts-dashboard-bridge zsh -lc 'cd /path/to/autodarts-dashboard && .venv/bin/python -u scripts/bridge_poc.py'
+screen -ls
+```
+
 ## Autodarts-API anbinden
 
 In `js/config.js`:

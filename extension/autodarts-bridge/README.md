@@ -2,7 +2,7 @@
 
 Proof-of-concept WebExtension for the local Autodarts dashboard bridge.
 
-It runs on `https://play.autodarts.io/*`, injects `page-bridge-sender.js` at
+It uses a Safari-compatible Manifest V2 shape, runs on `https://play.autodarts.io/*`, injects `page-bridge-sender.js` at
 `document_start`, and forwards only redacted `autodarts.matches` payloads for
 these topic suffixes to the local bridge at `ws://localhost:9876`:
 
@@ -10,6 +10,8 @@ these topic suffixes to the local bridge at `ws://localhost:9876`:
 - `.events`
 - `.game-events`
 - `.corrections`
+
+For debugging, the content script sets `data-autodarts-dashboard-bridge-content-script="loaded"` on `<html>` and logs whether the page sender loaded.
 
 The extension stores no tokens, cookies, tickets, WebSocket codes or payloads.
 It does not modify Autodarts and does not send control commands back to
@@ -35,9 +37,52 @@ Autodarts.
 5. Open or reload `https://play.autodarts.io` after the extension is enabled.
 6. Start a local match. The bridge should show two clients: dashboard + sender.
 
+### Safari verification notes
+
+On 2026-06-18 this path was verified in Safari:
+
+```text
+play.autodarts.io page
+  -> content script marker loaded
+  -> page sender active
+  -> content script posts redacted payload to background
+  -> background forwards to ws://localhost:9876
+  -> dashboard updates through ?bridge=ws://localhost:9876
+```
+
+Useful checks from the Play tab:
+
+```javascript
+document.documentElement.getAttribute('data-autodarts-dashboard-bridge-content-script')
+// "loaded"
+
+Boolean(window.__autodartsBridgeSender)
+// true
+```
+
+The page-context sender may show `connected: false` in Safari because
+`background.js` owns the localhost WebSocket connection. That is expected; the
+important runtime marker after a payload is:
+
+```javascript
+document.documentElement.getAttribute('data-autodarts-dashboard-bridge-content-bridge')
+// "background"
+```
+
+If Safari refuses to reload an old `localhost:8080` dashboard tab during local
+debugging, start the dashboard server on a fresh port such as `8765` and use an
+encoded bridge URL:
+
+```text
+http://localhost:8765/?layout=webview-big-readable&bridge=ws%3A%2F%2Flocalhost%3A9876
+```
+
 ## Safari note
 
 Safari blocks `javascript:` bookmarklets in the Smart Search field and late
 console injection is unreliable for this use case. For Safari we need a real
 Safari Web Extension wrapper around this WebExtension source so the script runs
 before Autodarts opens its WebSocket.
+
+
+Safari note: the page-context sender posts redacted payloads to the content script; `background.js` owns the local `ws://localhost:9876` bridge connection to avoid mixed-content blocking from `https://play.autodarts.io`.
